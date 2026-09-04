@@ -345,6 +345,9 @@
     font-size:0.78rem; color:var(--text-muted); padding:10px 10px 2px; line-height:1.4;
     min-height:2.6em; letter-spacing:0.01em;
   }
+  .theme-card-price{
+    font-size:0.82rem; font-weight:600; color:var(--gold-light); padding:2px 10px 0; letter-spacing:0.01em;
+  }
   .theme-card-actions{display:flex; gap:6px; padding:8px 10px 12px; margin-top:auto;}
   .btn-view-theme, .btn-order-theme{
     flex:1; text-align:center; padding:7px 4px; border-radius:999px; font-size:0.68rem; letter-spacing:0.01em;
@@ -375,6 +378,11 @@
   .field select{appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%236cd8ee' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 16px center;}
   .field select option{color:#0d2024; background:#eef6f7;}
   .field textarea{resize:vertical; min-height:90px;}
+  .field input[readonly]{
+    background:rgba(255,255,255,0.06); border-style:dashed; color:var(--gold-light);
+    cursor:not-allowed; font-weight:600;
+  }
+  .field input[readonly]:focus{ box-shadow:none; }
   .field.pulse input, .field.pulse select{animation:fieldPulse 1.1s ease;}
   @keyframes fieldPulse{
     0%{box-shadow:0 0 0 0 rgba(205,164,94,0.55);}
@@ -412,16 +420,24 @@
     position:fixed; inset:0; z-index:900; padding:24px;
     background:rgba(4,9,11,0.78); backdrop-filter:blur(8px);
     display:flex; align-items:center; justify-content:center;
-    opacity:0; visibility:hidden; transition:opacity 0.4s var(--ease), visibility 0.4s var(--ease);
+    opacity:0; visibility:hidden; transition:opacity 0.4s ease, visibility 0.4s ease;
   }
   .modal-overlay.open{opacity:1; visibility:visible;}
   .modal-box{
-    position:relative; width:100%; max-width:620px; max-height:88vh; overflow-y:auto;
+    position:relative; width:100%; max-width:620px; max-height:88vh; overflow:hidden;
     background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-l);
-    padding:clamp(28px,5vw,48px); transform:translateY(26px) scale(0.97);
-    transition:transform 0.45s var(--ease);
+    padding:0; display:flex; flex-direction:column;
+    opacity:0; transform:translateY(28px) scale(0.96);
+    transition:transform 0.55s cubic-bezier(.16,1,.3,1), opacity 0.45s ease;
+    will-change:transform, opacity;
   }
-  .modal-overlay.open .modal-box{transform:translateY(0) scale(1);}
+  .modal-overlay.open .modal-box{opacity:1; transform:translateY(0) scale(1);}
+  /* Wrapper ini yang di-scroll, BUKAN modal-box, supaya tombol close tetap diam di tempat */
+  .modal-scroll{
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:clamp(28px,5vw,48px);
+    flex:1 1 auto; min-height:0;
+  }
   .modal-box::before{
     content:''; position:absolute; top:-40%; right:-20%; width:60%; height:120%;
     background:radial-gradient(circle, rgba(42,148,174,0.14), transparent 65%);
@@ -596,6 +612,7 @@
     .floating-btn span.label{display:none;}
     .floating-btn{padding:16px;}
     .btn-row{flex-direction:column;}
+    .btn-row .form-submit, .btn-row .btn-download{flex:none; width:100%;}
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -967,6 +984,7 @@
 <div class="modal-overlay" id="orderModalOverlay">
   <div class="modal-box" id="orderModalBox">
     <button class="modal-close" id="orderModalClose" type="button" aria-label="Tutup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="modal-scroll">
     <div class="modal-head">
       <span class="modal-step-tag" id="orderStepTag">Langkah 1 dari 2</span>
       <p class="modal-kicker">Mulai Pemesanan</p>
@@ -983,9 +1001,27 @@
         <input type="tel" id="orderPhone" placeholder="08xxxxxxxxxx">
         <p class="err-text">Nomor WhatsApp wajib diisi.</p>
       </div>
+      <div class="field" id="fieldPackage">
+        <label for="orderPackage">Tema Dipilih</label>
+        <select id="orderPackage">
+          <option value="">— Pilih tema —</option>
+          <option value="Tema 3D Motion (Rp 150.000)">Tema 3D Motion — Rp 150.000 (Maks. 30 Foto Galeri)</option>
+          <option value="Tema 3D Motion Tanpa Foto (Rp 110.000)">Tema 3D Motion Tanpa Foto — Rp 110.000</option>
+          <option value="Tema Art (Rp 130.000)">Tema Art — Rp 130.000 (Maks. 20 Foto Galeri)</option>
+          <option value="Tema Art Tanpa Foto (Rp 100.000)">Tema Art Tanpa Foto — Rp 100.000</option>
+          <option value="Tema Luxury (Rp 110.000)">Tema Luxury — Rp 110.000 (Maks. 20 Foto Galeri)</option>
+          <option value="Tema Interaktif (Rp 150.000)">Tema Interaktif — Rp 150.000 (Maks. 30 Foto Galeri)</option>
+          <option value="Tema Interaktif Tanpa Foto (Rp 110.000)">Tema Interaktif Tanpa Foto — Rp 110.000</option>
+          <option value="Tema Spesial (Rp 100.000)">Tema Spesial — Rp 100.000 (Maks. 10 Foto Galeri)</option>
+          <option value="Tema Spesial Tanpa Foto (Rp 80.000)">Tema Spesial Tanpa Foto — Rp 80.000</option>
+          <option value="Tema Aqiqah/Khitan (Rp 80.000)">Tema Aqiqah/Khitan — Rp 80.000 (Maks. 10 Foto Galeri)</option>
+        </select>
+        <p class="err-text">Silakan pilih salah satu paket.</p>
+      </div>
       <div class="field" id="fieldNamaTema">
-        <label for="orderNamaTema">Nama Tema</label>
-        <input type="text" id="orderNamaTema" placeholder="Terisi otomatis jika memilih dari katalog, atau isi manual">
+        <label for="orderNamaTema">Nomor Tema</label>
+        <input type="text" id="orderNamaTema" placeholder="Wajib diisi — nomor tema (angka), contoh: 07">
+        <p class="err-text">Nomor tema wajib diisi (angka saja) sesuai katalog di atas, agar admin tahu persis tema pilihan Anda.</p>
       </div>
       <div class="field" id="fieldType">
         <label for="orderType">Jenis Undangan</label>
@@ -1006,23 +1042,6 @@
             <input type="date" id="orderDate">
             <p class="err-text">Tanggal acara wajib diisi.</p>
           </div>
-          <div class="field" id="fieldPackage">
-            <label for="orderPackage">Tema Dipilih</label>
-            <select id="orderPackage">
-              <option value="">— Pilih tema —</option>
-              <option value="Tema 3D Motion (Rp 150.000)">Tema 3D Motion — Rp 150.000 (Maks. 30 Foto Galeri)</option>
-              <option value="Tema 3D Motion Tanpa Foto (Rp 110.000)">Tema 3D Motion Tanpa Foto — Rp 110.000</option>
-              <option value="Tema Art (Rp 130.000)">Tema Art — Rp 130.000 (Maks. 20 Foto Galeri)</option>
-              <option value="Tema Art Tanpa Foto (Rp 100.000)">Tema Art Tanpa Foto — Rp 100.000</option>
-              <option value="Tema Luxury (Rp 110.000)">Tema Luxury — Rp 110.000 (Maks. 20 Foto Galeri)</option>
-              <option value="Tema Interaktif (Rp 150.000)">Tema Interaktif — Rp 150.000 (Maks. 30 Foto Galeri)</option>
-              <option value="Tema Interaktif Tanpa Foto (Rp 110.000)">Tema Interaktif Tanpa Foto — Rp 110.000</option>
-              <option value="Tema Spesial (Rp 100.000)">Tema Spesial — Rp 100.000 (Maks. 10 Foto Galeri)</option>
-              <option value="Tema Spesial Tanpa Foto (Rp 80.000)">Tema Spesial Tanpa Foto — Rp 80.000</option>
-              <option value="Tema Aqiqah/Khitan (Rp 80.000)">Tema Aqiqah/Khitan — Rp 80.000 (Maks. 10 Foto Galeri)</option>
-            </select>
-            <p class="err-text">Silakan pilih salah satu paket.</p>
-          </div>
           <div class="field" id="fieldNotes">
             <label for="orderNotes">Catatan Tambahan (opsional)</label>
             <textarea id="orderNotes" placeholder="Contoh: tema warna, referensi desain, dsb."></textarea>
@@ -1041,23 +1060,6 @@
       <div class="order-step2 wedding-step2" id="weddingStep2">
         <div class="order-step2-inner">
           <div class="step2-divider"></div>
-
-          <div class="field" id="fieldWeddingPackage">
-            <label for="weddingPackage">Tema Dipilih</label>
-            <select id="weddingPackage">
-              <option value="">— Pilih tema —</option>
-              <option value="Tema 3D Motion (Rp 150.000)">Tema 3D Motion — Rp 150.000 (Maks. 30 Foto Galeri)</option>
-              <option value="Tema 3D Motion Tanpa Foto (Rp 110.000)">Tema 3D Motion Tanpa Foto — Rp 110.000</option>
-              <option value="Tema Art (Rp 130.000)">Tema Art — Rp 130.000 (Maks. 20 Foto Galeri)</option>
-              <option value="Tema Art Tanpa Foto (Rp 100.000)">Tema Art Tanpa Foto — Rp 100.000</option>
-              <option value="Tema Luxury (Rp 110.000)">Tema Luxury — Rp 110.000 (Maks. 20 Foto Galeri)</option>
-              <option value="Tema Interaktif (Rp 150.000)">Tema Interaktif — Rp 150.000 (Maks. 30 Foto Galeri)</option>
-              <option value="Tema Interaktif Tanpa Foto (Rp 110.000)">Tema Interaktif Tanpa Foto — Rp 110.000</option>
-              <option value="Tema Spesial (Rp 100.000)">Tema Spesial — Rp 100.000 (Maks. 10 Foto Galeri)</option>
-              <option value="Tema Spesial Tanpa Foto (Rp 80.000)">Tema Spesial Tanpa Foto — Rp 80.000</option>
-            </select>
-            <p class="err-text">Silakan pilih salah satu paket.</p>
-          </div>
 
           <div class="field" id="fieldJudulAcara">
             <label for="wJudulAcara">Judul Acara</label>
@@ -1195,6 +1197,7 @@
 
       <div class="form-msg" id="orderMsgBox"></div>
     </form>
+    </div>
   </div>
 </div>
 
@@ -1202,6 +1205,7 @@
 <div class="modal-overlay" id="mapPickerOverlay">
   <div class="modal-box">
     <button class="modal-close" id="mapPickerClose" type="button" aria-label="Tutup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="modal-scroll">
     <div class="modal-head">
       <p class="modal-kicker">Lokasi Acara</p>
       <h3 class="modal-title">Pilih Titik di Peta</h3>
@@ -1210,6 +1214,7 @@
     <div class="map-picker-container" id="mapPickerContainer"></div>
     <p class="map-picker-coords" id="mapPickerCoords">Koordinat: —</p>
     <button type="button" class="form-submit" id="mapPickerConfirm">Gunakan Titik Ini</button>
+    </div>
   </div>
 </div>
 
@@ -1217,6 +1222,7 @@
 <div class="modal-overlay" id="pasteModalOverlay">
   <div class="modal-box">
     <button class="modal-close" id="pasteModalClose" type="button" aria-label="Tutup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="modal-scroll">
     <div class="modal-head">
       <p class="modal-kicker">Cadangan Admin</p>
       <h3 class="modal-title">Buat Gambar dari Teks WhatsApp</h3>
@@ -1234,6 +1240,7 @@
       </button>
       <div class="form-msg" id="pasteMsgBox"></div>
     </form>
+    </div>
   </div>
 </div>
 
@@ -1352,7 +1359,77 @@
   var orderModalBox = document.getElementById('orderModalBox');
   var orderStepTag = document.getElementById('orderStepTag');
 
+  /* ---------- Sistem nomor tema, memanfaatkan kolom "Nama Tema" yang sudah ada ---------- */
+  var namaTemaInput = document.getElementById('orderNamaTema');
+  var namaTemaLabelEl = document.querySelector('label[for="orderNamaTema"]');
+  var namaTemaWajibPlaceholder = 'Wajib diisi — nomor tema (angka) sesuai katalog, contoh: 07';
+  var namaTemaKatalogPlaceholder = 'Nama tema & harga terisi otomatis dari katalog';
+
+  /* Dua mode kolom di bawah "Tema Dipilih":
+     - 'pilih' : kolomnya adalah "Nomor Tema" (angka saja) — dipakai saat klien memilih
+                 sendiri dari dropdown Tema Dipilih (lewat tombol Pesan di Daftar Harga,
+                 atau lewat Pesan Sekarang di header/tombol mengambang).
+     - 'nama'  : kolomnya berubah jadi "Nama Tema" (teks bebas, terisi otomatis) dan
+                 dropdown Tema Dipilih disembunyikan — dipakai saat klien menekan
+                 "Pesan Tema Ini" dari Katalog Lengkap, karena tema spesifiknya sudah
+                 diketahui persis dari katalog. */
+  var temaFieldMode = 'pilih';
+
+  /* Nomor tema WAJIB diisi untuk semua paket (baik yang pakai foto maupun Tanpa Foto),
+     karena varian tanpa fotonya juga banyak pilihannya — nomor ini yang jadi penanda
+     tema mana persis yang dipilih klien. */
+  function pkgButuhNomorTema(pkgValue){
+    return !!pkgValue;
+  }
   function isWeddingJenis(){ return orderTypeSelect.value === 'Pernikahan'; }
+  function paketAktifSaatIni(){
+    return orderPackageSelect.value;
+  }
+  function namaTemaButuhAngka(){
+    return pkgButuhNomorTema(paketAktifSaatIni());
+  }
+  /* Dipakai untuk validasi wajib-isi: selalu wajib pada mode 'nama' (Nama Tema dari
+     katalog), atau wajib bila paket yang dipilih butuh nomor tema pada mode 'pilih'. */
+  function namaTemaWajibDiisi(){
+    return temaFieldMode === 'nama' ? true : namaTemaButuhAngka();
+  }
+  function updateNamaTemaMode(){
+    if(temaFieldMode !== 'pilih') return;
+    namaTemaInput.placeholder = namaTemaWajibPlaceholder;
+    namaTemaInput.setAttribute('inputmode','numeric');
+  }
+  /* Beralih ke mode "Nomor Tema" + tampilkan lagi dropdown Tema Dipilih (state normal) */
+  function setTemaFieldModePilih(){
+    temaFieldMode = 'pilih';
+    fieldPackage.style.display = '';
+    if(namaTemaLabelEl){ namaTemaLabelEl.textContent = 'Nomor Tema'; }
+    namaTemaInput.removeAttribute('readonly');
+    updateNamaTemaMode();
+  }
+  /* Beralih ke mode "Nama Tema" (dari Katalog Lengkap) + sembunyikan dropdown Tema Dipilih.
+     Nilainya (nama tema + harga) dikunci (readonly) supaya tidak bisa dihapus/diedit klien. */
+  function setTemaFieldModeNama(namaTemaDenganHarga){
+    temaFieldMode = 'nama';
+    fieldPackage.style.display = 'none';
+    if(namaTemaLabelEl){ namaTemaLabelEl.textContent = 'Nama Tema'; }
+    namaTemaInput.placeholder = namaTemaKatalogPlaceholder;
+    namaTemaInput.removeAttribute('inputmode');
+    namaTemaInput.value = namaTemaDenganHarga || '';
+    namaTemaInput.setAttribute('readonly','readonly');
+  }
+  /* Nomor Tema hanya boleh berisi angka. Saat mode 'nama' (Nama Tema dari katalog),
+     nilainya adalah nama lengkap tema sehingga tidak disaring jadi angka. */
+  namaTemaInput.addEventListener('input', function(){
+    if(temaFieldMode === 'pilih'){
+      var bersih = namaTemaInput.value.replace(/[^0-9]/g, '');
+      if(bersih !== namaTemaInput.value){ namaTemaInput.value = bersih; }
+    }
+  });
+
+  orderPackageSelect.addEventListener('change', function(){
+    updateNamaTemaMode();
+    fieldPackage.classList.remove('invalid');
+  });
 
   function setOrderStepVisible(visible){
     var wedding = visible && isWeddingJenis();
@@ -1367,6 +1444,7 @@
     var chosen = !!orderTypeSelect.value;
     setOrderStepVisible(chosen);
     fieldType.classList.remove('invalid');
+    updateNamaTemaMode();
     if(chosen && !isWeddingJenis()){
       setTimeout(function(){ document.getElementById('orderDate').focus(); }, 300);
     }
@@ -1375,9 +1453,11 @@
   function resetOrderModalState(){
     orderForm.reset();
     setOrderStepVisible(false);
-    [document.getElementById('fieldName'), document.getElementById('fieldPhone'), fieldType, document.getElementById('fieldDate'), fieldPackage].forEach(function(f){
+    setTemaFieldModePilih();
+    [document.getElementById('fieldName'), document.getElementById('fieldPhone'), fieldPackage, document.getElementById('fieldNamaTema'), fieldType, document.getElementById('fieldDate')].forEach(function(f){
       if(f) f.classList.remove('invalid');
     });
+    updateNamaTemaMode();
     resetWeddingDynamicLists();
     orderMsgBox.classList.remove('show','ok','err');
   }
@@ -1627,8 +1707,12 @@
       resetOrderModalState();
       orderPackageSelect.value = matchValue || (pkg + ' (' + price + ')');
       fieldPackage.classList.remove('invalid');
+      updateNamaTemaMode();
       openModal(orderModalOverlay);
-      setTimeout(function(){ document.getElementById('orderName').focus(); }, 350);
+      var butuhAngka = namaTemaButuhAngka();
+      setTimeout(function(){
+        document.getElementById(butuhAngka ? 'orderNamaTema' : 'orderName').focus();
+      }, 350);
     });
   });
 
@@ -1644,6 +1728,23 @@
   var CATALOG_MISSING_NOTE = {
     'Interaktif': 'Baru tersedia hingga Interaktif 10. Tema Interaktif lainnya (jika ada) belum berhasil dimuat dari sumber &mdash; lihat langsung di <a href="https://bertaut.web.id/#katalog" target="_blank" rel="noopener">bertaut.web.id</a>.'
   };
+
+  /* Harga tiap kategori tema, disamakan persis dengan Daftar Harga (#paket) di atas */
+  var CATALOG_PRICE = {
+    '3D Motion': { foto:'Rp 150.000', tanpaFoto:'Rp 110.000' },
+    'Art': { foto:'Rp 130.000', tanpaFoto:'Rp 100.000' },
+    'Interaktif': { foto:'Rp 150.000', tanpaFoto:'Rp 110.000' },
+    'Luxury': { foto:'Rp 110.000', tanpaFoto:null },
+    'Special': { foto:'Rp 100.000', tanpaFoto:'Rp 80.000' },
+    'Aqiqah / Khitan': { foto:'Rp 80.000', tanpaFoto:null }
+  };
+  function getCatalogPrice(catName, itemName){
+    var p = CATALOG_PRICE[catName];
+    if(!p) return '';
+    var tanpaFoto = /Tanpa Foto/i.test(itemName);
+    if(tanpaFoto){ return p.tanpaFoto || p.foto || ''; }
+    return p.foto || '';
+  }
 
   var CATALOG_GRADIENT = {
     '3D Motion': ['#2a94ae','#6cd8ee'],
@@ -1681,10 +1782,37 @@
     return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   }
 
-  function handlePesanTemaKatalog(themeName){
+  /* Pemetaan nama kategori katalog ke nama paket pada dropdown Tema Dipilih,
+     dipakai supaya saat klien pesan dari Katalog Lengkap, paket & harga tetap
+     tercatat otomatis di balik layar meski dropdownnya disembunyikan. */
+  var CATALOG_TO_PKG_NAME = {
+    '3D Motion': 'Tema 3D Motion',
+    'Art': 'Tema Art',
+    'Interaktif': 'Tema Interaktif',
+    'Luxury': 'Tema Luxury',
+    'Special': 'Tema Spesial',
+    'Aqiqah / Khitan': 'Tema Aqiqah/Khitan'
+  };
+  function derivePkgValueFromCatalog(catName, itemName){
+    var baseName = CATALOG_TO_PKG_NAME[catName];
+    if(!baseName) return '';
+    var tanpaFoto = /Tanpa Foto/i.test(itemName);
+    var pkgLabel = tanpaFoto ? (baseName + ' Tanpa Foto') : baseName;
+    var price = getCatalogPrice(catName, itemName);
+    var matchValue = null;
+    Array.prototype.forEach.call(orderPackageSelect.options, function(opt){
+      var label = opt.value.replace(/\s*\(.*\)$/, '');
+      if(label === pkgLabel){ matchValue = opt.value; }
+    });
+    return matchValue || (price ? (pkgLabel + ' (' + price + ')') : pkgLabel);
+  }
+
+  function handlePesanTemaKatalog(catName, itemName){
     resetOrderModalState();
-    var namaTemaInput = document.getElementById('orderNamaTema');
-    if(namaTemaInput){ namaTemaInput.value = themeName; }
+    orderPackageSelect.value = derivePkgValueFromCatalog(catName, itemName);
+    var price = getCatalogPrice(catName, itemName);
+    var namaTemaDenganHarga = price ? (itemName + ' — ' + price) : itemName;
+    setTemaFieldModeNama(namaTemaDenganHarga);
     openModal(orderModalOverlay);
     setTimeout(function(){ document.getElementById('orderName').focus(); }, 350);
   }
@@ -1713,6 +1841,14 @@
     nameEl.textContent = itemName;
     card.appendChild(nameEl);
 
+    var price = getCatalogPrice(catName, itemName);
+    if(price){
+      var priceEl = document.createElement('div');
+      priceEl.className = 'theme-card-price';
+      priceEl.textContent = price;
+      card.appendChild(priceEl);
+    }
+
     var actions = document.createElement('div');
     actions.className = 'theme-card-actions';
 
@@ -1728,7 +1864,7 @@
     orderBtn.type = 'button';
     orderBtn.className = 'btn-order-theme';
     orderBtn.textContent = 'Pesan Tema Ini';
-    orderBtn.addEventListener('click', function(){ handlePesanTemaKatalog(itemName); });
+    orderBtn.addEventListener('click', function(){ handlePesanTemaKatalog(catName, itemName); });
     actions.appendChild(orderBtn);
 
     card.appendChild(actions);
@@ -1896,6 +2032,7 @@
     var jenis = orderTypeSelect.value;
     var date = document.getElementById('orderDate').value;
     var pkg = orderPackageSelect.value;
+    var butuhTemaNomor = namaTemaWajibDiisi();
     var notes = document.getElementById('orderNotes').value.trim();
 
     var valid = true;
@@ -1906,8 +2043,9 @@
       if(!jenis){ setOrderStepVisible(false); }
       setInvalid(document.getElementById('fieldDate'), jenis && !date); if(jenis && !date) valid=false;
       setInvalid(fieldPackage, jenis && !pkg); if(jenis && !pkg) valid=false;
+      setInvalid(document.getElementById('fieldNamaTema'), jenis && butuhTemaNomor && !namaTema); if(jenis && butuhTemaNomor && !namaTema) valid=false;
     } else {
-      valid = !!(name && phone && jenis && date && pkg);
+      valid = !!(name && phone && jenis && date && pkg && (!butuhTemaNomor || namaTema));
     }
     return { valid:valid, nama:name, whatsapp:phone, namaTema:namaTema, jenis:jenis, tanggal:date ? formatTanggalIndo(date) : '', paket:pkg, catatan:notes };
   }
@@ -1917,7 +2055,8 @@
     var name = document.getElementById('orderName').value.trim();
     var phone = document.getElementById('orderPhone').value.trim();
     var namaTema = document.getElementById('orderNamaTema').value.trim();
-    var pkg = document.getElementById('weddingPackage').value;
+    var pkg = orderPackageSelect.value;
+    var butuhTemaNomor = namaTemaWajibDiisi();
     var judulAcaraUtama = document.getElementById('wJudulAcara').value.trim();
 
     var wanita = {
@@ -1989,7 +2128,8 @@
     if(showErrors){
       markInvalid('fieldName', !name);
       markInvalid('fieldPhone', !phone);
-      markInvalid('fieldWeddingPackage', !pkg);
+      markInvalid('fieldPackage', !pkg);
+      markInvalid('fieldNamaTema', butuhTemaNomor && !namaTema);
       markInvalid('fieldWNama', !wanita.nama);
       markInvalid('fieldWPanggilan', !wanita.panggilan);
       markInvalid('fieldWAnakKe', !wanita.anakKe);
@@ -2010,7 +2150,7 @@
         markInvalid('fieldAcaraWaktu-'+a.id, !a.waktu);
       });
     } else {
-      valid = !!(name && phone && pkg && wanita.nama && wanita.panggilan && wanita.anakKe && wanita.ayah && wanita.ibu &&
+      valid = !!(name && phone && pkg && (!butuhTemaNomor || namaTema) && wanita.nama && wanita.panggilan && wanita.anakKe && wanita.ayah && wanita.ibu &&
         pria.nama && pria.panggilan && pria.anakKe && pria.ayah && pria.ibu && ayat && acaraItems.length>0 &&
         acaraItems.every(function(a){ return a.judul && a.alamat && a.tanggal && a.waktu; }));
     }
@@ -2359,9 +2499,10 @@
         { label:'NAMA PEMESAN', value: data.nama || '-' },
         { label:'NOMOR WHATSAPP', value: data.whatsapp || '-' },
         { label:'JENIS UNDANGAN', value: data.jenis || '-' },
-        { label:'PAKET DIPILIH', value: data.paket || '-' },
-        { label:'TANGGAL ACARA', value: data.tanggal || '-' }
+        { label:'PAKET DIPILIH', value: data.paket || '-' }
       ];
+      if(data.namaTema){ rows.push({ label:'NAMA TEMA', value: data.namaTema }); }
+      rows.push({ label:'TANGGAL ACARA', value: data.tanggal || '-' });
       if(data.catatan){ rows.push({ label:'CATATAN', value: data.catatan }); }
 
       /* Hitung tinggi panel dinamis */
@@ -2494,6 +2635,8 @@
 
       /* ---- Susun baris konten (label + value) dari data biodata ---- */
       var rows = [];
+      rows.push({ label:'PAKET DIPILIH', value: data.paket || '-' });
+      if(data.namaTema){ rows.push({ label:'NAMA TEMA', value: data.namaTema }); }
       rows.push({ label:'DATA PENGANTIN WANITA', section:true });
       rows.push({ label:'NAMA LENGKAP', value:data.wanita.nama });
       rows.push({ label:'NAMA PANGGILAN', value:data.wanita.panggilan });
