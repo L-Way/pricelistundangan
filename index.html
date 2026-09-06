@@ -1335,8 +1335,20 @@
 
   document.getElementById('orderModalClose').addEventListener('click', function(){ closeModal(orderModalOverlay); });
   document.getElementById('pasteModalClose').addEventListener('click', function(){ closeModal(pasteModalOverlay); });
+  // Klik area gelap di luar kotak modal untuk menutupnya.
+  // Catatan: sebelumnya modal ikut tertutup kalau pengguna blok/seleksi teks
+  // di dalam kolom lalu menyeret kursor sampai keluar kotak dan melepas klik
+  // di area gelap — karena event "click" tetap dianggap "klik di luar" meski
+  // niatnya cuma menyeleksi teks. Sekarang modal hanya ditutup jika mouse
+  // BENAR-BENAR ditekan (mousedown) DAN dilepas (click) di area gelap yang
+  // sama, bukan hasil drag seleksi teks yang berawal dari dalam kotak form.
   [orderModalOverlay, pasteModalOverlay].forEach(function(ov){
-    ov.addEventListener('click', function(e){ if(e.target === ov) closeModal(ov); });
+    var mousedownOnOverlay = false;
+    ov.addEventListener('mousedown', function(e){ mousedownOnOverlay = (e.target === ov); });
+    ov.addEventListener('click', function(e){
+      if(e.target === ov && mousedownOnOverlay) closeModal(ov);
+      mousedownOnOverlay = false;
+    });
   });
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape'){
@@ -1678,7 +1690,15 @@
   }
 
   document.getElementById('mapPickerClose').addEventListener('click', function(){ closeModal(mapPickerOverlay); });
-  mapPickerOverlay.addEventListener('click', function(e){ if(e.target === mapPickerOverlay) closeModal(mapPickerOverlay); });
+  (function(){
+    // Sama seperti modal lain: hindari tertutup tak sengaja akibat drag seleksi teks.
+    var mousedownOnOverlay = false;
+    mapPickerOverlay.addEventListener('mousedown', function(e){ mousedownOnOverlay = (e.target === mapPickerOverlay); });
+    mapPickerOverlay.addEventListener('click', function(e){
+      if(e.target === mapPickerOverlay && mousedownOnOverlay) closeModal(mapPickerOverlay);
+      mousedownOnOverlay = false;
+    });
+  })();
   document.getElementById('mapPickerConfirm').addEventListener('click', function(){
     if(mapPickerMarker && mapPickerTargetId != null){
       var ll = mapPickerMarker.getLatLng();
