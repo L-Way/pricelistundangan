@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Testimoni Klien — Bertaut Undangan Digital</title>
+<meta name="description" content="Kumpulan testimoni klien Bertaut Undangan Digital. Baca pengalaman mereka dan bagikan penilaian Anda.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Playfair+Display:wght@500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#050d0f;
+    --bg-1:#071417;
+    --surface:#0d2024;
+    --surface-2:#122c31;
+    --border:rgba(238,246,247,0.09);
+    --border-strong:rgba(108,216,238,0.35);
+    --primary:#2a94ae;
+    --primary-light:#6cd8ee;
+    --primary-dim:#1c6d80;
+    --gold:#cda45e;
+    --gold-light:#eecb8f;
+    --text:#eef6f7;
+    --text-muted:#9db8bc;
+    --text-faint:#6d8a8e;
+    --radius-s:10px;
+    --radius-m:18px;
+    --radius-l:28px;
+    --shadow-glow:0 0 40px rgba(42,148,174,0.25);
+    --ease:cubic-bezier(.22,.85,.32,1);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Jost', sans-serif;
+    background:
+      radial-gradient(ellipse 90% 60% at 20% -10%, rgba(42,148,174,0.16), transparent 55%),
+      radial-gradient(ellipse 70% 50% at 100% 0%, rgba(205,164,94,0.08), transparent 55%),
+      var(--bg-1);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+    font-weight:300;
+    letter-spacing:0.01em;
+  }
+  img,svg{display:block; max-width:100%;}
+  a{color:inherit; text-decoration:none;}
+  ul{list-style:none;}
+  button{font-family:inherit; cursor:pointer;}
+
+  .container{width:min(1120px, 92%); margin:0 auto;}
+
+  .grain-veil{
+    position:fixed; inset:0; pointer-events:none; z-index:1;
+    background-image:
+      linear-gradient(rgba(238,246,247,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(238,246,247,0.015) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 20%, black, transparent 75%);
+  }
+
+  .shimmer-text{
+    font-family:'Playfair Display', serif;
+    background:linear-gradient(100deg,
+      var(--primary) 0%, var(--text) 18%, var(--primary-light) 32%,
+      var(--gold-light) 45%, var(--text) 58%, var(--primary) 74%,
+      var(--primary-light) 88%, var(--text) 100%);
+    background-size:280% 100%;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:shimmerMove 7s ease-in-out infinite alternate, shimmerGlow 3.4s ease-in-out infinite alternate;
+    display:inline-block;
+    padding-bottom:0.12em;
+    overflow:visible;
+  }
+  @keyframes shimmerMove{ 0%{background-position:0% 50%;} 100%{background-position:100% 50%;} }
+  @keyframes shimmerGlow{
+    0%{filter:drop-shadow(0 0 6px rgba(108,216,238,0.25));}
+    100%{filter:drop-shadow(0 0 22px rgba(108,216,238,0.55));}
+  }
+
+  /* ================= NAVBAR ================= */
+  header.site-nav{
+    position:sticky; top:0; z-index:200;
+    backdrop-filter:blur(16px);
+    background:rgba(5,13,15,0.72);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-row{ display:flex; align-items:center; justify-content:space-between; padding:16px 0; gap:16px; }
+  .nav-brand{font-family:'Playfair Display', serif; font-size:clamp(1.15rem, 2vw, 1.4rem); font-weight:600; letter-spacing:0.02em;}
+  .nav-links{display:flex; align-items:center; gap:30px; font-size:0.88rem; letter-spacing:0.03em; color:var(--text-muted); flex-wrap:wrap;}
+  .nav-links a{position:relative; padding:4px 0; transition:color 0.3s;}
+  .nav-links a::after{
+    content:''; position:absolute; left:0; bottom:-2px; width:0; height:1px;
+    background:var(--primary-light); transition:width 0.35s var(--ease);
+  }
+  .nav-links a:hover{color:var(--text);}
+  .nav-links a:hover::after{width:100%;}
+  .nav-cta{
+    padding:10px 22px; border-radius:999px; border:1px solid var(--border-strong);
+    font-size:0.85rem; color:var(--text); letter-spacing:0.04em; transition:all 0.35s;
+    white-space:nowrap; background:none;
+  }
+  .nav-cta:hover{background:var(--primary); border-color:var(--primary); box-shadow:0 6px 22px rgba(42,148,174,0.4);}
+
+  /* ================= PAGE HEADER ================= */
+  .page-hero{padding:min(10vh,90px) 0 40px; text-align:center;}
+  .page-hero-tag{
+    font-family:'Cormorant Garamond', serif; font-style:italic;
+    color:var(--gold-light); font-size:clamp(1rem,1.8vw,1.2rem);
+    letter-spacing:0.06em; margin-bottom:14px; opacity:0.95;
+  }
+  .page-hero-title{font-size:clamp(2rem, 5vw, 3.2rem); font-weight:600; line-height:1.18;}
+  .page-hero-sub{
+    max-width:560px; margin:18px auto 0; color:var(--text-muted);
+    font-size:clamp(0.95rem,1.6vw,1.05rem); line-height:1.75;
+  }
+  .back-link{
+    display:inline-flex; align-items:center; gap:8px; margin-top:26px;
+    font-size:0.85rem; color:var(--primary-light); letter-spacing:0.03em;
+  }
+  .back-link svg{width:15px; height:15px;}
+
+  /* ================= SECTION ================= */
+  .section{padding:50px 0 110px;}
+  .section-head{text-align:center; max-width:640px; margin:0 auto 48px;}
+  .section-kicker{
+    font-family:'Cormorant Garamond', serif; font-style:italic;
+    color:var(--gold-light); font-size:1.05rem; letter-spacing:0.04em; margin-bottom:10px;
+  }
+  .section-title{font-size:clamp(1.5rem, 3vw, 2rem); font-weight:600; line-height:1.2;}
+
+  /* ================= TESTIMONI ================= */
+  .testi-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:22px; margin-bottom:56px;}
+  .testi-empty{
+    grid-column:1 / -1; text-align:center; padding:40px 20px; color:var(--text-faint);
+    font-size:0.92rem; border:1px dashed var(--border); border-radius:var(--radius-m); line-height:1.7;
+  }
+  .testi-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-m);
+    padding:28px; display:flex; flex-direction:column; gap:16px; animation:cardIn 0.6s var(--ease);
+  }
+  @keyframes cardIn{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);}}
+  .testi-stars{display:flex; gap:3px;}
+  .testi-stars svg{width:16px; height:16px; color:var(--gold-light);}
+  .testi-msg{font-size:0.92rem; line-height:1.7; color:var(--text); font-style:italic; flex-grow:1;}
+  .testi-msg::before{content:'\201C';} .testi-msg::after{content:'\201D';}
+  .testi-who{display:flex; align-items:center; gap:12px;}
+  .testi-avatar{
+    width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, var(--primary), var(--primary-dim)); font-weight:600; font-size:0.85rem;
+    font-family:'Playfair Display', serif;
+  }
+  .testi-name{font-size:0.9rem; font-weight:500;}
+  .testi-role{font-size:0.76rem; color:var(--text-faint);}
+  .testi-form-wrap{max-width:640px; margin:0 auto;}
+  .testi-form-wrap .form-wrap{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-l);
+    padding:clamp(28px,5vw,48px); position:relative; overflow:hidden;
+  }
+  .testi-form-wrap .form-wrap::before{
+    content:''; position:absolute; top:-40%; right:-20%; width:60%; height:120%;
+    background:radial-gradient(circle, rgba(42,148,174,0.14), transparent 65%); pointer-events:none;
+  }
+  .testi-form-wrap .form-wrap > *{position:relative; z-index:1;}
+  .star-input{display:flex; gap:8px; margin-top:4px;}
+  .star-input button{background:none; border:none; padding:2px; line-height:0;}
+  .star-input svg{width:26px; height:26px; color:var(--text-faint); transition:color 0.25s, transform 0.25s;}
+  .star-input button:hover svg{transform:scale(1.15);}
+  .star-input button.active svg{color:var(--gold-light);}
+
+  /* ================= FORM FIELDS ================= */
+  .field{margin-bottom:20px; position:relative; z-index:1;}
+  .field label{display:block; font-size:0.82rem; color:var(--text-muted); margin-bottom:8px; letter-spacing:0.03em;}
+  .field input, .field textarea{
+    width:100%; padding:13px 16px; border-radius:var(--radius-s);
+    background:rgba(255,255,255,0.03); border:1px solid var(--border);
+    color:var(--text); font-family:inherit; font-size:0.95rem; transition:all 0.3s;
+  }
+  .field input:focus, .field textarea:focus{
+    outline:none; border-color:var(--primary-light); background:rgba(42,148,174,0.06);
+    box-shadow:0 0 0 3px rgba(42,148,174,0.12);
+  }
+  .field textarea{resize:vertical; min-height:90px;}
+  .form-submit{
+    width:100%; padding:16px; border-radius:999px; border:none;
+    background:linear-gradient(120deg, var(--primary-dim), var(--primary));
+    color:#fff; font-size:0.92rem; letter-spacing:0.05em;
+    box-shadow:0 12px 30px rgba(42,148,174,0.35); transition:transform 0.3s var(--ease), box-shadow 0.3s;
+  }
+  .form-submit:hover{transform:translateY(-2px); box-shadow:0 16px 40px rgba(42,148,174,0.5);}
+  .form-msg{margin-top:16px; padding:14px 16px; border-radius:var(--radius-s); font-size:0.87rem; display:none; line-height:1.6;}
+  .form-msg.show{display:block;}
+  .form-msg.ok{background:rgba(42,148,174,0.12); border:1px solid rgba(108,216,238,0.35); color:var(--primary-light);}
+  .form-msg.err{background:rgba(200,80,80,0.1); border:1px solid rgba(220,120,120,0.35); color:#e79a9a;}
+  .err-text{color:#e79a9a; font-size:0.76rem; margin-top:6px; display:none;}
+  .field.invalid input, .field.invalid textarea{border-color:#c86464;}
+  .field.invalid .err-text{display:block;}
+
+  /* ================= FOOTER ================= */
+  footer{border-top:1px solid var(--border); padding:56px 0 40px; margin-top:20px;}
+  .footer-row{display:flex; justify-content:space-between; align-items:flex-start; gap:32px; flex-wrap:wrap;}
+  .footer-brand{font-family:'Playfair Display', serif; font-size:1.3rem; color:var(--text);}
+  .footer-desc{color:var(--text-faint); font-size:0.85rem; margin-top:10px; max-width:280px; line-height:1.7;}
+  .footer-cols{display:flex; gap:60px; flex-wrap:wrap;}
+  .footer-col h4{font-size:0.82rem; color:var(--text-muted); letter-spacing:0.05em; margin-bottom:14px; font-weight:500;}
+  .footer-col a, .footer-col span{display:block; font-size:0.85rem; color:var(--text-faint); margin-bottom:10px;}
+  .footer-col a:hover{color:var(--primary-light);}
+  .footer-bottom{margin-top:48px; padding-top:24px; border-top:1px solid var(--border); text-align:center; font-size:0.78rem; color:var(--text-faint);}
+
+  /* ================= RESPONSIVE ================= */
+  @media (max-width:980px){ .testi-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:760px){
+    .nav-links{display:none;}
+  }
+  @media (max-width:640px){ .testi-grid{grid-template-columns:1fr;} }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="grain-veil"></div>
+
+<!-- ============ NAVBAR ============ -->
+<header class="site-nav">
+  <div class="container nav-row">
+    <a class="nav-brand" href="https://bertaut.kaone.web.id/">Bertaut</a>
+    <nav class="nav-links">
+      <a href="https://bertaut.kaone.web.id/#beranda">Beranda</a>
+      <a href="https://bertaut.kaone.web.id/#fitur">Fitur Undangan</a>
+      <a href="https://bertaut.kaone.web.id/#paket">Paket Harga</a>
+      <a href="https://bertaut.kaone.web.id/testimoni/">Testimoni</a>
+    </nav>
+    <a class="nav-cta" href="https://bertaut.kaone.web.id/">Kembali ke Beranda</a>
+  </div>
+</header>
+
+<!-- ============ PAGE HERO ============ -->
+<section class="page-hero">
+  <div class="container">
+    <p class="page-hero-tag">Kata Mereka</p>
+    <h1 class="page-hero-title shimmer-text">Testimoni Klien Kami</h1>
+    <p class="page-hero-sub">Kisah bahagia yang telah kami bantu wujudkan menjadi undangan digital yang berkesan. Baca pengalaman mereka, atau bagikan pengalaman Anda sendiri.</p>
+    <a class="back-link" href="https://bertaut.kaone.web.id/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      Kembali ke halaman utama
+    </a>
+  </div>
+</section>
+
+<!-- ============ TESTIMONI ============ -->
+<section class="section" id="testimoni">
+  <div class="container">
+    <div class="testi-grid" id="testiGrid">
+      <div class="testi-empty" id="testiEmpty">Belum ada penilaian. Jadilah yang pertama membagikan pengalaman Anda bersama Bertaut Undangan Digital.</div>
+    </div>
+
+    <div class="testi-form-wrap">
+      <div class="form-wrap">
+        <div class="section-head" style="margin-bottom:32px; text-align:left; max-width:100%;">
+          <p class="section-kicker">Bagikan Pengalaman</p>
+          <h3 class="section-title">Beri Penilaian Anda</h3>
+        </div>
+        <form id="testiForm" novalidate>
+          <div class="field" id="fieldTestiName">
+            <label for="testiName">Nama</label>
+            <input type="text" id="testiName" placeholder="Nama Anda">
+            <p class="err-text">Nama wajib diisi.</p>
+          </div>
+          <div class="field" id="fieldTestiStars">
+            <label>Bintang Penilaian</label>
+            <div class="star-input" id="starInput" role="radiogroup" aria-label="Bintang penilaian">
+              <button type="button" data-star="1" aria-label="1 bintang"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+              <button type="button" data-star="2" aria-label="2 bintang"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+              <button type="button" data-star="3" aria-label="3 bintang"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+              <button type="button" data-star="4" aria-label="4 bintang"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+              <button type="button" data-star="5" aria-label="5 bintang"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+            </div>
+            <p class="err-text">Pilih minimal 1 bintang.</p>
+          </div>
+          <div class="field" id="fieldTestiMsg">
+            <label for="testiMsg">Pesan / Ulasan</label>
+            <textarea id="testiMsg" placeholder="Ceritakan pengalaman Anda menggunakan Bertaut Undangan Digital..."></textarea>
+            <p class="err-text">Pesan ulasan wajib diisi.</p>
+          </div>
+          <button type="submit" class="form-submit">Kirim Penilaian</button>
+          <div class="form-msg" id="testiMsgBox"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="container">
+    <div class="footer-row">
+      <div>
+        <div class="footer-brand">Bertaut Undangan Digital</div>
+        <p class="footer-desc">Studio undangan digital yang mengubah momen bahagia Anda menjadi karya yang elegan dan berkesan.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h4>Navigasi</h4>
+          <a href="https://bertaut.kaone.web.id/#beranda">Beranda</a>
+          <a href="https://bertaut.kaone.web.id/#fitur">Fitur Undangan</a>
+          <a href="https://bertaut.kaone.web.id/#paket">Paket Harga</a>
+          <a href="https://bertaut.kaone.web.id/testimoni/">Testimoni</a>
+        </div>
+        <div class="footer-col">
+          <h4>Kontak</h4>
+          <span>WhatsApp: 0851-1707-1704</span>
+          <span>Instagram: @bertaut.ids</span>
+          <span>TikTok: @bertaut.ids</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 Bertaut Undangan Digital. Seluruh hak cipta dilindungi.</div>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  'use strict';
+
+  function setInvalid(field, invalid){
+    if(!field) return;
+    field.classList.toggle('invalid', !!invalid);
+  }
+
+  /* ================= TESTIMONI: SUPABASE ================= */
+  /* Ulasan dikirim & dibaca langsung dari tabel Supabase "kaone_motret_ulasan" —
+     tabel yang sama dipakai oleh halaman-halaman pricelist Kaone Motret lain
+     (Wedding, Margondang, Mangayun, Prewedding, Isi Biodata, Wisuda), supaya
+     ulasan yang masuk lewat halaman Bertaut ini otomatis tampil di Buku Job
+     juga. Kolom "asal_form" diisi 'undangan_digital' agar keterangan jenis acara di
+     bawah nama otomatis tertulis "Undangan Digital". */
+  var ULASAN_SUPABASE_URL = 'https://gyleppavsgbtrlgbyztv.supabase.co';
+  var ULASAN_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5bGVwcGF2c2didHJsZ2J5enR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NjU0MDQsImV4cCI6MjEwMzM0MTQwNH0.0t7bMoTjgd-c48O37wo1QyGFsFnjrRiAkDzH8VMgw-Q';
+  var ULASAN_TABLE = 'kaone_motret_ulasan';
+
+  var reviewSupabaseClient = null;
+  if(window.supabase){
+    try{ reviewSupabaseClient = window.supabase.createClient(ULASAN_SUPABASE_URL, ULASAN_SUPABASE_ANON_KEY); }
+    catch(e){ console.error('Gagal inisialisasi Supabase (ulasan)', e); }
+  }
+
+  /* Ambil daftar publish_targets satu baris ulasan dengan aman, apapun bentuk
+     datanya dari Supabase (array asli, string JSON, atau baris lama yang cuma
+     punya kolom "dipublikasikan"). */
+  function getPublishTargetsSafe(u){
+    var t = u.publish_targets;
+    if(Array.isArray(t)) return t;
+    if(typeof t === 'string'){
+      try{
+        var parsed = JSON.parse(t);
+        if(Array.isArray(parsed)) return parsed;
+      }catch(e){ /* bukan JSON valid, abaikan */ }
+    }
+    return u.dipublikasikan ? ['wedding'] : [];
+  }
+
+  function testimoniJenisAcaraLabel(u){
+    var asal = (u.asal_form || '').toLowerCase();
+    if(asal === 'biodata') return u.jenis_acara || 'Acara';
+    if(asal === 'wedding') return u.jenis_acara || 'Wedding / Patuaekkon';
+    var MAP = {
+      mangayun: 'Mangayun / Aqiqah',
+      margondang: 'Margondang',
+      prewedding: 'Prewedding',
+      wisuda: 'Wisuda',
+      undangan_digital: 'Undangan Digital'
+    };
+    return MAP[asal] || 'Undangan Digital';
+  }
+
+  /* ================= BINTANG PENILAIAN TESTIMONI ================= */
+  var starButtons = document.querySelectorAll('#starInput button');
+  var currentRating = 0;
+  starButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      currentRating = parseInt(btn.getAttribute('data-star'), 10);
+      starButtons.forEach(function(b){
+        b.classList.toggle('active', parseInt(b.getAttribute('data-star'),10) <= currentRating);
+      });
+      document.getElementById('fieldTestiStars').classList.remove('invalid');
+    });
+  });
+
+  /* ================= MUAT & RENDER TESTIMONI ================= */
+  var testiGrid = document.getElementById('testiGrid');
+  var STAR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+
+  function initials(str){
+    var parts = String(str||'').trim().split(/\s+/);
+    var s = parts[0] ? parts[0][0] : '';
+    if(parts.length>1) s += parts[parts.length-1][0];
+    return s.toUpperCase();
+  }
+
+  function buildTestiCard(u){
+    var card = document.createElement('div');
+    card.className = 'testi-card';
+    var rating = Number(u.rating)||0;
+    var starsHtml = '';
+    for(var s=1; s<=5; s++){ starsHtml += s<=rating ? STAR_SVG : STAR_SVG.replace('fill="currentColor"','fill="none" stroke="currentColor" stroke-width="1.6"'); }
+    card.innerHTML =
+      '<div class="testi-stars">'+starsHtml+'</div>' +
+      '<p class="testi-msg"></p>' +
+      '<div class="testi-who"><div class="testi-avatar"></div>' +
+      '<div><div class="testi-name"></div><div class="testi-role"></div></div></div>';
+    card.querySelector('.testi-msg').textContent = u.komentar || '';
+    card.querySelector('.testi-avatar').textContent = initials(u.nama_klien || 'Klien');
+    card.querySelector('.testi-name').textContent = u.nama_klien || 'Klien';
+    card.querySelector('.testi-role').textContent = testimoniJenisAcaraLabel(u);
+    return card;
+  }
+
+  function renderTestimoniList(list){
+    if(!testiGrid) return;
+    testiGrid.innerHTML = '';
+    if(!list || !list.length){
+      var empty = document.createElement('div');
+      empty.className = 'testi-empty';
+      empty.id = 'testiEmpty';
+      empty.textContent = 'Belum ada penilaian. Jadilah yang pertama membagikan pengalaman Anda bersama Bertaut Undangan Digital.';
+      testiGrid.appendChild(empty);
+      return;
+    }
+    list.forEach(function(u){
+      testiGrid.appendChild(buildTestiCard(u));
+    });
+  }
+
+  function loadTestimoniList(){
+    if(!reviewSupabaseClient){
+      if(testiGrid) testiGrid.innerHTML = '<div class="testi-empty">Testimoni belum bisa dimuat. Periksa koneksi internet Anda.</div>';
+      return;
+    }
+    reviewSupabaseClient
+      .from(ULASAN_TABLE)
+      .select('*')
+      .order('created_at', { ascending:false })
+      .then(function(res){
+        if(res && res.error){
+          console.error('Gagal memuat testimoni', res.error);
+          if(testiGrid) testiGrid.innerHTML = '<div class="testi-empty">Testimoni belum bisa dimuat saat ini.</div>';
+          return;
+        }
+        var semua = res.data || [];
+        var untukUndangan = semua.filter(function(u){
+          return getPublishTargetsSafe(u).indexOf('undangan_digital') !== -1;
+        });
+        renderTestimoniList(untukUndangan);
+      })
+      .catch(function(err){
+        console.error('Gagal memuat testimoni', err);
+        if(testiGrid) testiGrid.innerHTML = '<div class="testi-empty">Testimoni belum bisa dimuat saat ini.</div>';
+      });
+  }
+  loadTestimoniList();
+
+  /* ================= VALIDASI & KIRIM TESTIMONI ================= */
+  var testiForm = document.getElementById('testiForm');
+  var testiMsgBox = document.getElementById('testiMsgBox');
+
+  testiForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var nameEl = document.getElementById('testiName');
+    var msgEl = document.getElementById('testiMsg');
+    var name = nameEl.value.trim();
+    var msg = msgEl.value.trim();
+
+    var valid = true;
+    setInvalid(document.getElementById('fieldTestiName'), !name); if(!name) valid=false;
+    setInvalid(document.getElementById('fieldTestiStars'), currentRating===0); if(currentRating===0) valid=false;
+    setInvalid(document.getElementById('fieldTestiMsg'), !msg); if(!msg) valid=false;
+
+    testiMsgBox.classList.remove('show','ok','err');
+    if(!valid){
+      testiMsgBox.textContent = 'Nama, bintang penilaian, dan pesan wajib diisi sebelum mengirim ulasan.';
+      testiMsgBox.classList.add('show','err');
+      return;
+    }
+
+    if(!reviewSupabaseClient){
+      testiMsgBox.textContent = 'Gagal terhubung ke server. Periksa koneksi internet Anda lalu muat ulang halaman.';
+      testiMsgBox.classList.add('show','err');
+      return;
+    }
+
+    var submitBtn = testiForm.querySelector('.form-submit');
+    var originalBtnText = submitBtn ? submitBtn.textContent : '';
+    if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Mengirim...'; }
+
+    reviewSupabaseClient
+      .from(ULASAN_TABLE)
+      .insert({ nama_klien: name, rating: currentRating, komentar: msg, asal_form: 'undangan_digital' })
+      .then(function(res){
+        if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
+        if(res && res.error){
+          console.error('Gagal mengirim ulasan', res.error);
+          testiMsgBox.textContent = 'Gagal mengirim ulasan. Silakan coba lagi beberapa saat lagi.';
+          testiMsgBox.classList.add('show','err');
+          return;
+        }
+        testiMsgBox.textContent = 'Terima kasih atas penilaian Anda! Ulasan akan tampil setelah disetujui.';
+        testiMsgBox.classList.add('show','ok');
+
+        testiForm.reset();
+        currentRating = 0;
+        starButtons.forEach(function(b){ b.classList.remove('active'); });
+      })
+      .catch(function(err){
+        if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
+        console.error('Gagal mengirim ulasan', err);
+        testiMsgBox.textContent = 'Gagal mengirim ulasan. Periksa koneksi internet Anda lalu coba lagi.';
+        testiMsgBox.classList.add('show','err');
+      });
+  });
+
+})();
+</script>
+</body>
+</html>
