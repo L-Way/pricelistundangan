@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Bertaut Undangan Digital — Undangan Digital Mewah</title>
+<title>Bertaut Undangan Digital - Undangan Digital Mewah</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -411,7 +411,7 @@
     cursor:not-allowed; font-weight:600;
   }
   .field input[readonly]:focus{ box-shadow:none; }
-  .field.pulse input, .field.pulse select{animation:fieldPulse 1.1s ease;}
+  .field.pulse input, .field.pulse select, .field.pulse textarea{animation:fieldPulse 1.1s ease;}
   @keyframes fieldPulse{
     0%{box-shadow:0 0 0 0 rgba(205,164,94,0.55);}
     60%{box-shadow:0 0 0 10px rgba(205,164,94,0);}
@@ -548,6 +548,33 @@
   .map-picker-hint{font-size:0.8rem; color:var(--text-faint); margin-bottom:16px; line-height:1.6;}
   .map-pin-icon{filter:drop-shadow(0 4px 8px rgba(0,0,0,0.45));}
   .map-picker-coords{font-size:0.78rem; color:var(--text-muted); margin-bottom:16px; letter-spacing:0.02em;}
+
+  /* ================= SAKLAR ALAMAT SAMA & BAR SIMPAN OTOMATIS ================= */
+  .same-addr{margin-bottom:18px; padding:12px 14px; border-radius:var(--radius-s); background:rgba(108,216,238,0.05); border:1px dashed var(--border-strong);}
+  .switch{position:relative; display:flex; align-items:center; gap:12px; cursor:pointer; user-select:none; font-size:0.85rem; color:var(--text-muted); line-height:1.4;}
+  .switch input{position:absolute; opacity:0; width:0; height:0;}
+  .switch-track{position:relative; flex-shrink:0; width:42px; height:24px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--border); transition:all 0.3s var(--ease);}
+  .switch-track::after{content:''; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:var(--text-muted); transition:all 0.3s var(--ease);}
+  .switch input:checked + .switch-track{background:linear-gradient(120deg, var(--primary-dim), var(--primary)); border-color:transparent;}
+  .switch input:checked + .switch-track::after{transform:translateX(18px); background:#fff;}
+  .switch input:focus-visible + .switch-track{outline:2px solid var(--primary-light); outline-offset:3px;}
+  .switch input:checked ~ .switch-label{color:var(--text);}
+  .dyn-item.synced .geo-btn-row, .dyn-item.synced .geo-status{display:none;}
+  .dyn-item.synced .field textarea.is-synced, .dyn-item.synced .field input.is-synced{
+    border-style:dashed; color:var(--text-muted); background:rgba(255,255,255,0.05);
+    cursor:not-allowed; font-weight:300;
+  }
+  .draft-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:10px 14px; flex-wrap:wrap;
+    margin:-12px 0 22px; padding:10px 14px; border-radius:var(--radius-s);
+    background:rgba(42,148,174,0.08); border:1px solid rgba(108,216,238,0.2);
+    font-size:0.78rem; color:var(--text-muted); line-height:1.5;
+  }
+  .draft-bar button{
+    background:none; border:1px solid var(--border); border-radius:999px; padding:5px 12px;
+    font-size:0.74rem; color:var(--gold-light); transition:all 0.25s; white-space:nowrap;
+  }
+  .draft-bar button:hover{border-color:var(--gold-light); background:rgba(205,164,94,0.12);}
 
   /* ================= TESTIMONI ================= */
   .testi-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:22px; margin-bottom:56px;}
@@ -1028,6 +1055,10 @@
       <p class="modal-kicker">Mulai Pemesanan</p>
       <h3 class="modal-title">Formulir Pemesanan</h3>
     </div>
+    <div class="draft-bar" id="draftBar">
+      <span id="draftBarText">Isian Anda tersimpan otomatis di browser ini, jadi aman jika halaman ter-refresh atau ingin dilanjutkan nanti.</span>
+      <button type="button" id="draftClearBtn" style="display:none;">Kosongkan formulir</button>
+    </div>
     <form id="orderForm" novalidate>
       <div class="field" id="fieldName">
         <label for="orderName">Nama Lengkap</label>
@@ -1364,9 +1395,11 @@
     overlay.classList.add('open');
     document.body.classList.add('modal-open');
     openModals++;
+    if(overlay === orderModalOverlay){ setModalOpenFlag(true); }
   }
   function closeModal(overlay){
     overlay.classList.remove('open');
+    if(overlay === orderModalOverlay){ setModalOpenFlag(false); }
     openModals = Math.max(0, openModals-1);
     if(openModals===0){ document.body.classList.remove('modal-open'); }
   }
@@ -1397,8 +1430,13 @@
     }
   });
 
-  document.getElementById('navCtaBtn').addEventListener('click', function(){ resetOrderModalState(); openModal(orderModalOverlay); });
-  document.getElementById('floatingFormBtn').addEventListener('click', function(){ resetOrderModalState(); openModal(orderModalOverlay); });
+  document.getElementById('navCtaBtn').addEventListener('click', openOrderModalKeepDraft);
+  document.getElementById('floatingFormBtn').addEventListener('click', openOrderModalKeepDraft);
+  /* Membuka formulir TANPA mengosongkan isian sebelumnya (isian tetap ada sampai klien menekan "Kosongkan formulir"). */
+  function openOrderModalKeepDraft(){
+    orderMsgBox.classList.remove('show','ok','err');
+    openModal(orderModalOverlay);
+  }
   document.getElementById('navPasteBtn').addEventListener('click', function(){ openModal(pasteModalOverlay); });
 
   /* ---------- Form pemesanan bertahap: step 1 (Nama, WhatsApp, Jenis) -> step 2 (detail) ---------- */
@@ -1452,6 +1490,7 @@
   }
   /* Beralih ke mode "Nomor Tema" + tampilkan lagi dropdown Tema Dipilih (state normal) */
   function setTemaFieldModePilih(){
+    if(temaFieldMode === 'nama'){ namaTemaInput.value = ''; }
     temaFieldMode = 'pilih';
     fieldPackage.style.display = '';
     if(namaTemaLabelEl){ namaTemaLabelEl.textContent = 'Nomor Tema'; }
@@ -1512,6 +1551,9 @@
     updateNamaTemaMode();
     resetWeddingDynamicLists();
     ['previewWAnakKe','previewPAnakKe'].forEach(function(id){ var pv = document.getElementById(id); if(pv) pv.textContent = ''; });
+    orderForm.querySelectorAll('.field.invalid').forEach(function(f){ f.classList.remove('invalid'); });
+    clearDraftStorage();
+    updateDraftBar(null);
     orderMsgBox.classList.remove('show','ok','err');
   }
 
@@ -1524,6 +1566,7 @@
   function renumberAcara(){
     var items = acaraList.querySelectorAll('.acara-item .acara-num');
     items.forEach(function(el, i){ el.textContent = i+1; });
+    refreshSameToggles();
   }
   function renumberGeneric(container, selector){
     var items = container.querySelectorAll(selector);
@@ -1557,6 +1600,9 @@
         '<label>Judul Acara Lainnya</label>' +
         '<input type="text" class="acara-lainnya" data-id="'+id+'" placeholder="Tulis judul acara">' +
         '<p class="err-text">Tulis judul acara.</p>' +
+      '</div>' +
+      '<div class="same-addr" id="sameAddr-'+id+'" style="display:none;">' +
+        '<label class="switch"><input type="checkbox" class="acara-same" data-id="'+id+'"><span class="switch-track"></span><span class="switch-label">Alamat &amp; link maps sama dengan Acara #1</span></label>' +
       '</div>' +
       '<div class="field" id="fieldAcaraAlamat-'+id+'">' +
         '<label>Alamat</label>' +
@@ -1663,7 +1709,55 @@
       var lainnyaField = document.getElementById('fieldAcaraLainnya-'+id);
       if(lainnyaField){ lainnyaField.style.display = (e.target.value === 'Lainnya') ? '' : 'none'; }
     }
+    if(e.target.classList.contains('acara-same')){ refreshSameToggles(); }
   });
+  /* Saat Acara #1 diubah, acara lain yang saklarnya aktif ikut tersalin otomatis. */
+  document.getElementById('acaraList').addEventListener('input', syncSameAddress);
+  document.getElementById('acaraList').addEventListener('focusout', syncSameAddress);
+
+  /* ================= SAKLAR "ALAMAT & MAPS SAMA DENGAN ACARA #1" ================= */
+  function applySameState(item, on){
+    var al = item.querySelector('.acara-alamat'), mp = item.querySelector('.acara-maps');
+    item.classList.toggle('synced', !!on);
+    [al, mp].forEach(function(el){
+      if(!el) return;
+      el.readOnly = !!on;
+      el.classList.toggle('is-synced', !!on);
+    });
+  }
+  function syncSameAddress(){
+    var items = acaraList.querySelectorAll('.acara-item');
+    if(items.length < 2) return;
+    var first = items[0];
+    var a = first.querySelector('.acara-alamat').value;
+    var m = first.querySelector('.acara-maps').value;
+    items.forEach(function(item, i){
+      if(i === 0) return;
+      var chk = item.querySelector('.acara-same');
+      if(chk && chk.checked){
+        item.querySelector('.acara-alamat').value = a;
+        item.querySelector('.acara-maps').value = m;
+        var fAl = item.querySelector('[id^="fieldAcaraAlamat-"]');
+        if(fAl && a.trim()){ fAl.classList.remove('invalid'); }
+      }
+    });
+  }
+  function refreshSameToggles(){
+    var items = acaraList.querySelectorAll('.acara-item');
+    items.forEach(function(item, i){
+      var wrapEl = item.querySelector('.same-addr');
+      var chk = item.querySelector('.acara-same');
+      if(i === 0){
+        /* Acara pertama adalah sumber alamat, jadi tidak punya saklar. */
+        if(chk && chk.checked){ chk.checked = false; }
+        if(wrapEl){ wrapEl.style.display = 'none'; }
+      } else if(wrapEl){
+        wrapEl.style.display = '';
+      }
+      applySameState(item, i > 0 && chk && chk.checked);
+    });
+    syncSameAddress();
+  }
 
   /* ================= GEOLOKASI: "Lokasi Saat Ini" ================= */
   function handleGeoLocate(id, btn){
@@ -1677,6 +1771,7 @@
     navigator.geolocation.getCurrentPosition(function(pos){
       var lat = pos.coords.latitude.toFixed(6), lng = pos.coords.longitude.toFixed(6);
       if(mapsInput){ mapsInput.value = 'https://www.google.com/maps?q=' + lat + ',' + lng; }
+      syncSameAddress(); scheduleSave();
       if(statusEl){ statusEl.textContent = 'Lokasi berhasil diambil.'; statusEl.className = 'geo-status ok'; }
     }, function(err){
       if(statusEl){ statusEl.textContent = 'Gagal mengambil lokasi. Pastikan izin lokasi diaktifkan.'; statusEl.className = 'geo-status err'; }
@@ -1750,6 +1845,7 @@
       var mapsInput = acaraList.querySelector('.acara-maps[data-id="'+mapPickerTargetId+'"]');
       if(mapsInput){ mapsInput.value = 'https://www.google.com/maps?q=' + lat + ',' + lng; }
       var statusEl = document.getElementById('geoStatus-'+mapPickerTargetId);
+      syncSameAddress(); scheduleSave();
       if(statusEl){ statusEl.textContent = 'Titik lokasi dipilih dari peta.'; statusEl.className = 'geo-status ok'; }
     }
     closeModal(mapPickerOverlay);
@@ -1768,14 +1864,19 @@
         var label = opt.value.replace(/\s*\(.*\)$/, '');
         if(label === pkg){ matchValue = opt.value; }
       });
-      resetOrderModalState();
-      orderPackageSelect.value = matchValue || (pkg + ' (' + price + ')');
+      /* Isian lain (nama, WA, biodata) tetap dipertahankan; hanya pilihan tema yang diganti. */
+      var newPkgValue = matchValue || (pkg + ' (' + price + ')');
+      if(temaFieldMode === 'nama'){ setTemaFieldModePilih(); }
+      else if(orderPackageSelect.value !== newPkgValue){ namaTemaInput.value = ''; }
+      orderPackageSelect.value = newPkgValue;
+      orderMsgBox.classList.remove('show','ok','err');
+      scheduleSave();
       fieldPackage.classList.remove('invalid');
       updateNamaTemaMode();
       openModal(orderModalOverlay);
       var butuhAngka = namaTemaButuhAngka();
       setTimeout(function(){
-        document.getElementById(butuhAngka ? 'orderNamaTema' : 'orderName').focus();
+        document.getElementById((butuhAngka && !namaTemaInput.value) ? 'orderNamaTema' : 'orderName').focus();
       }, 350);
     });
   });
@@ -1872,11 +1973,14 @@
   }
 
   function handlePesanTemaKatalog(catName, itemName){
-    resetOrderModalState();
+    orderMsgBox.classList.remove('show','ok','err');
     orderPackageSelect.value = derivePkgValueFromCatalog(catName, itemName);
     var price = getCatalogPrice(catName, itemName);
     var namaTemaDenganHarga = price ? (itemName + ' — ' + price) : itemName;
     setTemaFieldModeNama(namaTemaDenganHarga);
+    document.getElementById('fieldNamaTema').classList.remove('invalid');
+    fieldPackage.classList.remove('invalid');
+    scheduleSave();
     openModal(orderModalOverlay);
     setTimeout(function(){ document.getElementById('orderName').focus(); }, 350);
   }
@@ -2098,6 +2202,31 @@
   loadCatalogFromAllSources();
 
   function setInvalid(fieldEl, invalid){ fieldEl.classList.toggle('invalid', invalid); }
+
+  /* Setelah validasi gagal: gulir (smooth) ke kolom wajib yang masih kosong PALING ATAS,
+     beri efek berdenyut, lalu fokuskan. Kolom yang tersembunyi diabaikan. */
+  function scrollToFirstInvalid(){
+    var list = orderForm.querySelectorAll('.field.invalid');
+    var target = null;
+    for(var i = 0; i < list.length; i++){
+      var f = list[i];
+      if(f.offsetParent === null) continue;
+      var step = f.closest('.order-step2');
+      if(step && !step.classList.contains('visible')) continue;
+      target = f; break;
+    }
+    if(!target) return false;
+    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+    target.classList.remove('pulse');
+    void target.offsetWidth;
+    target.classList.add('pulse');
+    var ctl = target.querySelector('input:not([readonly]), select, textarea:not([readonly])');
+    setTimeout(function(){
+      if(ctl){ try{ ctl.focus({ preventScroll:true }); }catch(err){ ctl.focus(); } }
+    }, 450);
+    setTimeout(function(){ target.classList.remove('pulse'); }, 1300);
+    return true;
+  }
 
   /* ================= FORMAT TANGGAL INDONESIA ================= */
   var BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -2382,9 +2511,27 @@
    ['wTurutMengundang','turut'],
    ['orderNotes','kalimat'], ['weddingNotes','kalimat'], ['testiMsg','kalimat']
   ].forEach(function(p){ bindSmartCap(document.getElementById(p[0]), p[1]); });
+  /* Instagram: selalu huruf kecil & tanpa spasi (username IG memang tidak mengenal huruf besar/spasi). */
+  function normalizeIG(v){ return String(v || '').toLowerCase().replace(/\s+/g, ''); }
   ['wWanitaIG','wPriaIG'].forEach(function(id){
     var el = document.getElementById(id);
-    if(el){ el.setAttribute('autocapitalize','none'); el.setAttribute('autocorrect','off'); }
+    if(!el) return;
+    el.setAttribute('autocapitalize','none');
+    el.setAttribute('autocorrect','off');
+    el.setAttribute('spellcheck','false');
+    el.addEventListener('input', function(e){
+      if(e.isComposing) return;
+      var v = el.value, nv = normalizeIG(v);
+      if(nv !== v){
+        var pos = el.selectionStart, diff = v.length - nv.length;
+        el.value = nv;
+        try{ var np = Math.max(0, (pos == null ? nv.length : pos) - diff); el.setSelectionRange(np, np); }catch(err){}
+      }
+    });
+    el.addEventListener('blur', function(){
+      var nv = normalizeIG(el.value);
+      if(nv !== el.value){ el.value = nv; }
+    });
   });
 
   /* Pratinjau langsung kalimat anak + orang tua di bawah kolom "Anak Ke" */
@@ -2404,6 +2551,14 @@
   var orderForm = document.getElementById('orderForm');
   var orderMsgBox = document.getElementById('orderMsgBox');
   var VENDOR_WA_NUMBER = '6285117071704';
+
+  /* Tanda merah hilang begitu klien mulai mengisi kolom tersebut. */
+  ['input','change'].forEach(function(evt){
+    orderForm.addEventListener(evt, function(e){
+      var f = e.target.closest ? e.target.closest('.field') : null;
+      if(f && String(e.target.value || '').trim() !== ''){ f.classList.remove('invalid'); }
+    });
+  });
 
   function collectOrderData(showErrors){
     var name = normalizeNama(document.getElementById('orderName').value.trim());
@@ -2445,7 +2600,7 @@
       anakKe: document.getElementById('wWanitaAnakKe').value.trim(),
       ayah: normalizeNama(document.getElementById('wWanitaAyah').value.trim()),
       ibu: normalizeNama(document.getElementById('wWanitaIbu').value.trim()),
-      ig: document.getElementById('wWanitaIG').value.trim()
+      ig: normalizeIG(document.getElementById('wWanitaIG').value)
     };
     var pria = {
       nama: normalizeNama(document.getElementById('wPriaNama').value.trim()),
@@ -2453,7 +2608,7 @@
       anakKe: document.getElementById('wPriaAnakKe').value.trim(),
       ayah: normalizeNama(document.getElementById('wPriaAyah').value.trim()),
       ibu: normalizeNama(document.getElementById('wPriaIbu').value.trim()),
-      ig: document.getElementById('wPriaIG').value.trim()
+      ig: normalizeIG(document.getElementById('wPriaIG').value)
     };
     /* Teks final untuk WA & gambar: Bapak/Ibu pada orang tua, Putra/Putri + urutan + "Dari" */
     wanita.anakKeTeks = formatAnakKe(wanita.anakKe, 'Putri');
@@ -2617,7 +2772,8 @@
     if(isWeddingJenis()){
       var wdata = collectWeddingData(true);
       if(!wdata.valid){
-        orderMsgBox.textContent = 'Mohon lengkapi semua data bertanda wajib (biodata pengantin, minimal 1 detail acara, dan ayat/quotes) sebelum mengirim.';
+        orderMsgBox.textContent = 'Masih ada kolom wajib yang kosong (ditandai merah). Kami arahkan ke kolom pertama yang perlu dilengkapi.';
+        scrollToFirstInvalid();
         orderMsgBox.classList.add('show','err');
         return;
       }
@@ -2631,7 +2787,8 @@
 
     var data = collectOrderData(true);
     if(!data.valid){
-      orderMsgBox.textContent = 'Mohon lengkapi semua data bertanda wajib sebelum mengirim pemesanan.';
+      orderMsgBox.textContent = 'Masih ada kolom wajib yang kosong (ditandai merah). Kami arahkan ke kolom pertama yang perlu dilengkapi.';
+      scrollToFirstInvalid();
       orderMsgBox.classList.add('show','err');
       return;
     }
@@ -2657,7 +2814,8 @@
     var data = collectOrderData(true);
     orderMsgBox.classList.remove('show','ok','err');
     if(!data.valid){
-      orderMsgBox.textContent = 'Lengkapi Nama, WhatsApp, Jenis Undangan, Tanggal Acara, dan Paket untuk membuat gambar.';
+      orderMsgBox.textContent = 'Lengkapi dulu kolom yang ditandai merah untuk membuat gambar.';
+      scrollToFirstInvalid();
       orderMsgBox.classList.add('show','err');
       return;
     }
@@ -2672,7 +2830,8 @@
     var wdata = collectWeddingData(true);
     orderMsgBox.classList.remove('show','ok','err');
     if(!wdata.valid){
-      orderMsgBox.textContent = 'Lengkapi semua data bertanda wajib untuk membuat gambar ringkasan.';
+      orderMsgBox.textContent = 'Lengkapi dulu kolom yang ditandai merah untuk membuat gambar ringkasan.';
+      scrollToFirstInvalid();
       orderMsgBox.classList.add('show','err');
       return;
     }
@@ -3450,6 +3609,174 @@
         testiMsgBox.classList.add('show','err');
       });
   });
+
+
+  /* ================= SIMPAN OTOMATIS ISIAN FORMULIR (localStorage) =================
+     Seluruh isian formulir pemesanan (termasuk daftar Acara, Rekening & Love Story) disimpan
+     otomatis di browser klien. Jika halaman ter-refresh tak sengaja atau klien menunda,
+     isiannya dipulihkan. Kedaluwarsa 7 hari. Dihapus lewat tombol "Kosongkan formulir". */
+  var DRAFT_KEY = 'bertaut_order_draft_v1';
+  var DRAFT_OPEN_KEY = 'bertaut_order_modal_open';
+  var DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  var draftTimer = null, draftRestoring = false;
+
+  function setModalOpenFlag(on){
+    try{ if(on){ sessionStorage.setItem(DRAFT_OPEN_KEY, '1'); } else { sessionStorage.removeItem(DRAFT_OPEN_KEY); } }catch(e){}
+  }
+  function clearDraftStorage(){
+    try{ localStorage.removeItem(DRAFT_KEY); }catch(e){}
+  }
+  function readDraft(){
+    try{
+      var raw = localStorage.getItem(DRAFT_KEY);
+      if(!raw) return null;
+      var d = JSON.parse(raw);
+      if(!d || d.v !== 1) return null;
+      if(Date.now() - (d.savedAt || 0) > DRAFT_TTL_MS){ localStorage.removeItem(DRAFT_KEY); return null; }
+      return d;
+    }catch(e){ return null; }
+  }
+
+  function updateDraftBar(ts){
+    var txt = document.getElementById('draftBarText');
+    var btn = document.getElementById('draftClearBtn');
+    if(!txt || !btn) return;
+    if(ts){
+      var jam = '';
+      try{ jam = new Date(ts).toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' }); }catch(e){}
+      txt.textContent = 'Isian tersimpan otomatis' + (jam ? ' (pukul ' + jam + ')' : '') + ' — aman jika halaman ter-refresh, bisa dilanjutkan nanti.';
+      btn.style.display = '';
+    } else {
+      txt.textContent = 'Isian Anda tersimpan otomatis di browser ini, jadi aman jika halaman ter-refresh atau ingin dilanjutkan nanti.';
+      btn.style.display = 'none';
+    }
+  }
+
+  function collectDraft(){
+    var fields = {};
+    orderForm.querySelectorAll('input[id], select[id], textarea[id]').forEach(function(el){ fields[el.id] = el.value; });
+    var acara = [], rekening = [], love = [];
+    acaraList.querySelectorAll('.acara-item').forEach(function(it){
+      acara.push({
+        judul: it.querySelector('.acara-judul').value,
+        lainnya: it.querySelector('.acara-lainnya').value,
+        alamat: it.querySelector('.acara-alamat').value,
+        maps: it.querySelector('.acara-maps').value,
+        same: !!it.querySelector('.acara-same').checked,
+        tanggal: it.querySelector('.acara-tanggal').value,
+        waktu: it.querySelector('.acara-waktu').value
+      });
+    });
+    rekeningList.querySelectorAll('.rekening-item').forEach(function(it){
+      rekening.push({ bank: it.querySelector('.rek-bank').value, nomor: it.querySelector('.rek-nomor').value, nama: it.querySelector('.rek-nama').value });
+    });
+    loveStoryList.querySelectorAll('.love-item').forEach(function(it){
+      love.push({ tanggal: it.querySelector('.love-tanggal').value, cerita: it.querySelector('.love-cerita').value });
+    });
+    return { v:1, savedAt: Date.now(), mode: temaFieldMode, fields: fields, acara: acara, rekening: rekening, love: love };
+  }
+
+  function draftHasContent(d){
+    function filled(v){ return v != null && v !== false && String(v).trim() !== ''; }
+    if(Object.keys(d.fields || {}).some(function(k){ return filled(d.fields[k]); })) return true;
+    function anyIn(list){
+      return (list || []).some(function(o){ return Object.keys(o).some(function(k){ return filled(o[k]); }); });
+    }
+    return anyIn(d.acara) || anyIn(d.rekening) || anyIn(d.love);
+  }
+
+  function saveDraftNow(){
+    clearTimeout(draftTimer);
+    if(draftRestoring) return;
+    try{
+      var d = collectDraft();
+      if(!draftHasContent(d)){ localStorage.removeItem(DRAFT_KEY); updateDraftBar(null); return; }
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+      updateDraftBar(d.savedAt);
+    }catch(e){ /* penyimpanan penuh / diblokir (mode privat): abaikan, formulir tetap berfungsi */ }
+  }
+  function scheduleSave(){
+    if(draftRestoring) return;
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(saveDraftNow, 400);
+  }
+
+  function restoreDraft(){
+    var d = readDraft();
+    if(!d || !draftHasContent(d)) return false;
+    draftRestoring = true;
+    try{
+      resetWeddingDynamicLists();
+      Object.keys(d.fields || {}).forEach(function(id){
+        if(id === 'orderNamaTema') return;
+        var el = document.getElementById(id);
+        if(el && orderForm.contains(el)){ el.value = d.fields[id]; }
+      });
+      if(d.mode === 'nama'){ setTemaFieldModeNama(d.fields.orderNamaTema || ''); }
+      else { setTemaFieldModePilih(); namaTemaInput.value = d.fields.orderNamaTema || ''; }
+      updateNamaTemaMode();
+
+      (d.acara || []).forEach(function(a){
+        addAcaraItem();
+        var it = acaraList.lastElementChild;
+        it.querySelector('.acara-judul').value = a.judul || '';
+        var lf = it.querySelector('.acara-lainnya-field');
+        if(lf){ lf.style.display = (a.judul === 'Lainnya') ? '' : 'none'; }
+        it.querySelector('.acara-lainnya').value = a.lainnya || '';
+        it.querySelector('.acara-alamat').value = a.alamat || '';
+        it.querySelector('.acara-maps').value = a.maps || '';
+        it.querySelector('.acara-tanggal').value = a.tanggal || '';
+        it.querySelector('.acara-waktu').value = a.waktu || '';
+        it.querySelector('.acara-same').checked = !!a.same;
+      });
+      (d.rekening || []).forEach(function(r){
+        addRekeningItem();
+        var it = rekeningList.lastElementChild;
+        it.querySelector('.rek-bank').value = r.bank || '';
+        it.querySelector('.rek-nomor').value = r.nomor || '';
+        it.querySelector('.rek-nama').value = r.nama || '';
+      });
+      (d.love || []).forEach(function(l){
+        addLoveStoryItem();
+        var it = loveStoryList.lastElementChild;
+        it.querySelector('.love-tanggal').value = l.tanggal || '';
+        it.querySelector('.love-cerita').value = l.cerita || '';
+      });
+
+      setOrderStepVisible(!!orderTypeSelect.value);
+      refreshSameToggles();
+      ['wWanitaAnakKe','wPriaAnakKe'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el){ el.dispatchEvent(new Event('input', { bubbles:true })); }
+      });
+    } finally {
+      draftRestoring = false;
+    }
+    updateDraftBar(d.savedAt);
+    return true;
+  }
+
+  ['input','change','focusout','click'].forEach(function(evt){ orderForm.addEventListener(evt, scheduleSave); });
+  window.addEventListener('pagehide', saveDraftNow);
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'hidden'){ saveDraftNow(); } });
+
+  document.getElementById('draftClearBtn').addEventListener('click', function(){
+    if(window.confirm('Kosongkan semua isian formulir? Data yang sudah diisi akan dihapus.')){
+      resetOrderModalState();
+    }
+  });
+
+  /* Pulihkan isian saat halaman dibuka. Jika formulir sedang terbuka saat halaman ter-refresh,
+     lewati halaman awal dan langsung buka kembali formulirnya. */
+  if(restoreDraft()){
+    var wasOpen = false;
+    try{ wasOpen = sessionStorage.getItem(DRAFT_OPEN_KEY) === '1'; }catch(e){}
+    if(wasOpen){
+      gate.classList.add('gate-hidden');
+      document.body.classList.remove('gate-active');
+      openModal(orderModalOverlay);
+    }
+  }
 
 })();
 </script>
