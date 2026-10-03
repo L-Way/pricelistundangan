@@ -441,6 +441,7 @@
   .err-text{color:#e79a9a; font-size:0.76rem; margin-top:6px; display:none;}
   .field.invalid input, .field.invalid select, .field.invalid textarea{border-color:#c86464;}
   .field.invalid .err-text{display:block;}
+  .field-preview{font-size:0.78rem; color:var(--gold-light); margin-top:8px; min-height:1em; letter-spacing:0.02em;}
   .helper-text{font-size:0.83rem; color:var(--text-faint); line-height:1.7; margin-bottom:22px;}
 
   /* ================= MODAL ================= */
@@ -1117,8 +1118,9 @@
             <p class="err-text">Nama panggilan wajib diisi.</p>
           </div>
           <div class="field" id="fieldWAnakKe">
-            <label for="wWanitaAnakKe">Anak Ke</label>
-            <input type="text" id="wWanitaAnakKe" placeholder="cth. Anak kedua dari tiga bersaudara">
+            <label for="wWanitaAnakKe">Anak Ke (angka atau kata)</label>
+            <input type="text" id="wWanitaAnakKe" placeholder="cth. 1 atau pertama, 2 atau kedua">
+            <p class="field-preview" id="previewWAnakKe"></p>
             <p class="err-text">Kolom anak ke- wajib diisi.</p>
           </div>
           <div class="field-row">
@@ -1151,8 +1153,9 @@
             <p class="err-text">Nama panggilan wajib diisi.</p>
           </div>
           <div class="field" id="fieldPAnakKe">
-            <label for="wPriaAnakKe">Anak Ke</label>
-            <input type="text" id="wPriaAnakKe" placeholder="cth. Anak pertama dari dua bersaudara">
+            <label for="wPriaAnakKe">Anak Ke (angka atau kata)</label>
+            <input type="text" id="wPriaAnakKe" placeholder="cth. 1 atau pertama, 2 atau kedua">
+            <p class="field-preview" id="previewPAnakKe"></p>
             <p class="err-text">Kolom anak ke- wajib diisi.</p>
           </div>
           <div class="field-row">
@@ -1508,6 +1511,7 @@
     });
     updateNamaTemaMode();
     resetWeddingDynamicLists();
+    ['previewWAnakKe','previewPAnakKe'].forEach(function(id){ var pv = document.getElementById(id); if(pv) pv.textContent = ''; });
     orderMsgBox.classList.remove('show','ok','err');
   }
 
@@ -1586,7 +1590,8 @@
       '</div>';
     acaraList.appendChild(wrap);
     renumberAcara();
-    bindAutoCap(wrap.querySelector('.acara-alamat'), capitalizeAlamat);
+    bindSmartCap(wrap.querySelector('.acara-alamat'), 'alamat');
+    bindSmartCap(wrap.querySelector('.acara-lainnya'), 'judul');
   }
 
   function addRekeningItem(){
@@ -1603,7 +1608,8 @@
       '<div class="field"><label>Atas Nama</label><input type="text" class="rek-nama" data-id="'+id+'" placeholder="Nama pemilik rekening"></div>';
     rekeningList.appendChild(wrap);
     renumberGeneric(rekeningList, '.rekening-num');
-    bindAutoCap(wrap.querySelector('.rek-nama'), capitalizeNamaGelar);
+    bindSmartCap(wrap.querySelector('.rek-bank'), 'bank');
+    bindSmartCap(wrap.querySelector('.rek-nama'), 'nama');
   }
 
   function addLoveStoryItem(){
@@ -1619,6 +1625,7 @@
       '<div class="field"><label>Kisah</label><textarea class="love-cerita" data-id="'+id+'" rows="3" placeholder="Ceritakan momen perjalanan cinta kalian di sini"></textarea></div>';
     loveStoryList.appendChild(wrap);
     renumberGeneric(loveStoryList, '.love-num');
+    bindSmartCap(wrap.querySelector('.love-cerita'), 'kalimat');
   }
 
   function resetWeddingDynamicLists(){
@@ -2103,48 +2110,295 @@
     return d + ' ' + BULAN[mo-1] + ' ' + y;
   }
 
-  /* ================= AUTO KAPITALISASI NAMA & ALAMAT =================
-     Setiap huruf awal kata otomatis dibuat huruf besar (huruf lain kecil).
-     Khusus kolom Nama: token yang mengandung titik dianggap gelar
-     (mis. "s.pd" -> "S.Pd") dan otomatis dipisah koma dari nama utama,
-     mis. "anggun putri lestari s.pd" -> "Anggun Putri Lestari, S.Pd" */
-  function capEveryWord(str){
-    return str.toLowerCase().replace(/[a-zà-ÿ]+/gi, function(w){
-      return w.charAt(0).toUpperCase() + w.slice(1);
+  /* ================= AUTO KAPITALISASI, GELAR, BAPAK/IBU & ANAK KE =================
+     1) LIVE (saat mengetik): huruf pertama tiap kata otomatis menjadi huruf besar.
+        Panjang teks tidak berubah sehingga posisi kursor tidak melompat.
+     2) SAAT KOLOM DITINGGALKAN (blur) / sebelum kirim: dirapikan penuh --
+        huruf sisa menjadi kecil, gelar depan & belakang ditulis dengan benar,
+        singkatan alamat (RT/RW) tetap kapital, dst.
+     3) Teks WA & gambar: nama ayah diberi "Bapak", ibu diberi "Ibu", dan kolom
+        "Anak Ke" diubah menjadi mis. "Putra Pertama Dari" / "Putri Kedua Dari". */
+
+  /* ---------- Kamus gelar (kunci = huruf kecil tanpa titik) ---------- */
+  var FRONT_TITLES = {
+    h:'H.', hj:'Hj.', dr:'Dr.', drg:'drg.', dra:'Dra.', drs:'Drs.', ir:'Ir.',
+    prof:'Prof.', kh:'K.H.', pdt:'Pdt.', ps:'Ps.', ust:'Ust.', ny:'Ny.'
+  };
+  var BACK_TITLES = {
+    se:'S.E.', st:'S.T.', sh:'S.H.', ss:'S.S.', spd:'S.Pd', spdi:'S.Pd.I', spdsd:'S.Pd.SD',
+    skom:'S.Kom', sikom:'S.I.Kom', ssos:'S.Sos', sag:'S.Ag', spsi:'S.Psi', sfarm:'S.Farm',
+    skm:'S.KM', skep:'S.Kep', sip:'S.IP', shum:'S.Hum', ssi:'S.Si', sak:'S.Ak', sap:'S.AP',
+    sth:'S.Th', sthi:'S.Th.I', sds:'S.Ds', ssy:'S.Sy', strkeb:'S.Tr.Keb', strkep:'S.Tr.Kep', strt:'S.Tr.T.',
+    mm:'M.M.', mt:'M.T.', mh:'M.H.', ma:'M.A.', mpd:'M.Pd', mpdi:'M.Pd.I', mkom:'M.Kom',
+    msi:'M.Si', msc:'M.Sc.', mag:'M.Ag', mkes:'M.Kes', mpsi:'M.Psi', mak:'M.Ak', mhum:'M.Hum',
+    meng:'M.Eng.', med:'M.Ed.', mikom:'M.I.Kom', mfarm:'M.Farm', mkep:'M.Kep', mstat:'M.Stat',
+    map:'M.AP', msy:'M.Sy', mba:'MBA', phd:'Ph.D.', amd:'A.Md.', amdkep:'A.Md.Kep',
+    amdkeb:'A.Md.Keb', amdt:'A.Md.T.', ners:'Ners', spa:'Sp.A', sppd:'Sp.PD', spog:'Sp.OG',
+    spb:'Sp.B', spm:'Sp.M', span:'Sp.An', sprad:'Sp.Rad', spjp:'Sp.JP', cpa:'CPA'
+  };
+
+  var LETTERS = 'a-zà-ÿ';
+  /* Huruf kapital pertama pada tiap kata (panjang teks tidak berubah) */
+  function liveUpperStarts(raw){
+    var out = '', prev = '';
+    for(var i=0; i<raw.length; i++){
+      var ch = raw.charAt(i);
+      var atStart = (i === 0) || /[\s\-\/.,(“"]/.test(prev);
+      if(atStart && ch !== ch.toUpperCase()){
+        var up = ch.toUpperCase();
+        out += (up.length === 1 ? up : ch);
+      } else { out += ch; }
+      prev = ch;
+    }
+    return out;
+  }
+  /* Huruf kapital pertama pada tiap kalimat */
+  function liveUpperSentences(raw){
+    var out = '', start = true;
+    for(var i=0; i<raw.length; i++){
+      var ch = raw.charAt(i);
+      if(start && ch !== ch.toUpperCase()){
+        var up = ch.toUpperCase();
+        out += (up.length === 1 ? up : ch);
+        start = false;
+      } else {
+        out += ch;
+        if(/[.!?\n]/.test(ch)){ start = true; }
+        else if(!/\s/.test(ch)){ start = false; }
+      }
+    }
+    return out;
+  }
+  /* Khusus nama: kata pertama persis "d" / "dr" / "drg" (huruf kecil) dibiarkan,
+     karena bisa jadi gelar dokter "dr." yang memang ditulis huruf kecil. */
+  function liveCapNama(raw){
+    var out = liveUpperStarts(raw);
+    if(/^d(r(g)?)?(?![A-Za-zÀ-ÿ])/.test(raw)){ out = raw.charAt(0) + out.slice(1); }
+    return out;
+  }
+
+  /* Satu kata: huruf awal besar, sisanya kecil (juga setelah - . / ( ) */
+  function titleCaseToken(tok){
+    return tok.toLowerCase().replace(new RegExp('(^|[-./(])([' + LETTERS + '])', 'g'), function(m, p, c){
+      return p + c.toUpperCase();
     });
   }
-  function capitalizeNamaGelar(raw){
-    if(!raw) return raw;
-    var str = capEveryWord(raw.trim().replace(/\s+/g,' '));
-    var tokens = str.split(' ');
-    var i = tokens.length - 1;
-    var titleTokens = [];
-    while(i >= 0 && /\./.test(tokens[i].replace(/,$/,''))){
-      titleTokens.unshift(tokens[i].replace(/,$/,''));
-      i--;
-    }
-    if(titleTokens.length && i >= 0){
-      var nameTokens = tokens.slice(0, i+1);
-      nameTokens[nameTokens.length-1] = nameTokens[nameTokens.length-1].replace(/,$/,'');
-      return nameTokens.join(' ') + ', ' + titleTokens.join(', ');
-    }
-    return str;
+  function rapikanSpasi(raw){ return String(raw||'').trim().replace(/[ \t]+/g,' '); }
+
+  /* ---------- Gelar ---------- */
+  function cleanTok(tok){ return tok.replace(/,+$/,''); }
+  function titleKey(tok){ return cleanTok(tok).replace(/\./g,'').toLowerCase(); }
+  function isFrontTitle(tok){
+    var t = cleanTok(tok);
+    return /^[A-Za-z.]+$/.test(t) && Object.prototype.hasOwnProperty.call(FRONT_TITLES, titleKey(tok));
   }
-  function capitalizeAlamat(raw){
-    if(!raw) return raw;
-    return capEveryWord(raw.trim().replace(/[ \t]+/g,' '));
+  function frontCanon(tok){
+    var key = titleKey(tok);
+    if(key === 'dr'){
+      /* "dr" huruf kecil = dokter (dr.), "Dr"/"DR" = doktor (Dr.) */
+      return cleanTok(tok).replace(/\./g,'') === 'dr' ? 'dr.' : 'Dr.';
+    }
+    return FRONT_TITLES[key];
   }
-  function bindAutoCap(el, fn){
+  var STRICT_2HURUF = { st:1, ma:1, ss:1 };
+  function isBackTitle(tok){
+    var t = cleanTok(tok);
+    if(!/^[A-Za-z.]+$/.test(t)) return false;
+    var key = titleKey(tok);
+    if(!Object.prototype.hasOwnProperty.call(BACK_TITLES, key)) return false;
+    var tNoEnd = t.replace(/\.$/,'');
+    if(/\./.test(tNoEnd)) return true;                 /* ada titik di tengah: pasti gelar (S.Pd, M.Kom) */
+    /* "St", "Ma", "Ss" bisa berupa nama/kata biasa -> wajib huruf kapital semua (ST, MA, SS) */
+    if(STRICT_2HURUF[key]) return tNoEnd === tNoEnd.toUpperCase();
+    return true;
+  }
+  function backCanon(tok){ return BACK_TITLES[titleKey(tok)]; }
+
+  /* Nama lengkap + gelar: "dr budi santoso sp.pd m.kes" -> "dr. Budi Santoso, Sp.PD, M.Kes" */
+  function normalizeNama(raw){
+    if(!raw) return raw;
+    var tokens = raw.replace(/,/g,' ').trim().split(/\s+/).filter(Boolean);
+    if(!tokens.length) return '';
+    var front = [], back = [];
+    while(tokens.length > 1 && isFrontTitle(tokens[0])){ front.push(frontCanon(tokens.shift())); }
+    while(tokens.length > 1 && isBackTitle(tokens[tokens.length-1])){ back.unshift(backCanon(tokens.pop())); }
+    var core = tokens.map(titleCaseToken).join(' ');
+    return (front.length ? front.join(' ') + ' ' : '') + core + (back.length ? ', ' + back.join(', ') : '');
+  }
+  function normalizePanggilan(raw){
+    return rapikanSpasi(raw).split(' ').map(titleCaseToken).join(' ');
+  }
+
+  /* ---------- Alamat ---------- */
+  var ADDR_UPPER = { rt:1, rw:1, ri:1, tni:1, polri:1, pt:1, cv:1, sdn:1, smp:1, smpn:1, sma:1, sman:1, smk:1, smkn:1, ii:1, iii:1, iv:1, vi:1, vii:1, viii:1, ix:1, xi:1, xii:1 };
+  var ADDR_LOWER = { dan:1, atau:1, dengan:1, yang:1, di:1, ke:1, dari:1 };
+  var ADDR_STREET = { jl:1, jalan:1, gg:1, gang:1, lr:1, lorong:1 };
+  function normalizeAlamat(raw){
+    if(!raw) return raw;
+    return raw.split('\n').map(function(line){
+      var toks = line.trim().split(/[ \t]+/).filter(Boolean);
+      var prev = '';
+      return toks.map(function(tok, idx){
+        var onlyLetters = new RegExp('^[' + LETTERS + ']+[.,]?$', 'i').test(tok);
+        var res = tok.replace(new RegExp('[' + LETTERS + ']+', 'gi'), function(w){
+          var lw = w.toLowerCase();
+          if(ADDR_UPPER[lw]) return w.toUpperCase();
+          if(idx > 0 && onlyLetters && ADDR_LOWER[lw] && !ADDR_STREET[prev]) return lw;
+          return lw.charAt(0).toUpperCase() + lw.slice(1);
+        });
+        prev = tok.replace(/[^a-z]/gi,'').toLowerCase();
+        return res;
+      }).join(' ');
+    }).join('\n');
+  }
+
+  /* ---------- Turut mengundang (paragraf nama + gelar) ---------- */
+  var TURUT_LOWER = { dan:1, atau:1, dengan:1, serta:1, beserta:1, seluruh:1 };
+  function normalizeTurut(raw){
+    if(!raw) return raw;
+    return raw.split('\n').map(function(line){
+      var toks = line.trim().split(/[ \t]+/).filter(Boolean);
+      return toks.map(function(tok, idx){
+        var lead = (tok.match(/^[(\["'“]+/) || [''])[0];
+        var rest = tok.slice(lead.length);
+        var trail = (rest.match(/[,;:)\]"'”]+$/) || [''])[0];
+        var core = rest.slice(0, rest.length - trail.length);
+        if(!core) return tok;
+        var lw = core.toLowerCase();
+        var prevLw = idx > 0 ? toks[idx-1].toLowerCase().replace(/[^a-z]/g,'') : '';
+        var out;
+        if(idx > 0 && (TURUT_LOWER[lw] || (lw === 'keluarga' && prevLw === 'beserta'))){
+          out = lw;
+        } else if(isBackTitle(core) && idx > 0 && /\./.test(core.replace(/\.$/,'')) ){
+          out = backCanon(core);
+        } else if(isBackTitle(core) && idx > 0 && core === core.toUpperCase() && titleKey(core).length > 2){
+          out = backCanon(core);
+        } else if(isFrontTitle(core) && idx < toks.length - 1 && /^[A-Za-z.]+$/.test(core)){
+          out = frontCanon(core);
+        } else {
+          out = titleCaseToken(core);
+        }
+        return lead + out + trail;
+      }).join(' ');
+    }).join('\n');
+  }
+
+  /* ---------- Nama bank / e-wallet ---------- */
+  var BANK_MAP = {
+    bca:'BCA', bni:'BNI', bri:'BRI', bsi:'BSI', btn:'BTN', ocbc:'OCBC', cimb:'CIMB', btpn:'BTPN',
+    bjb:'BJB', bpd:'BPD', bpr:'BPR', dki:'DKI', dana:'DANA', ovo:'OVO', gopay:'GoPay',
+    shopeepay:'ShopeePay', linkaja:'LinkAja', seabank:'SeaBank'
+  };
+  function normalizeBank(raw){
+    return rapikanSpasi(raw).split(' ').map(function(w){
+      var k = w.toLowerCase();
+      return BANK_MAP[k] || titleCaseToken(w);
+    }).join(' ');
+  }
+
+  /* ---------- Anak ke -> "Putra Pertama Dari" / "Putri Kedua Dari" ---------- */
+  var URUTAN_KATA = ['','Pertama','Kedua','Ketiga','Keempat','Kelima','Keenam','Ketujuh','Kedelapan','Kesembilan','Kesepuluh','Kesebelas','Kedua Belas','Ketiga Belas','Keempat Belas','Kelima Belas'];
+  var URUTAN_DARI_KATA = { pertama:1, sulung:1, kesatu:1, kedua:2, ketiga:3, keempat:4, kelima:5, keenam:6, ketujuh:7, kedelapan:8, kesembilan:9, kesepuluh:10, kesebelas:11 };
+  var URUTAN_ANGKA_KATA = { satu:1, dua:2, tiga:3, empat:4, lima:5, enam:6, tujuh:7, delapan:8, sembilan:9, sepuluh:10 };
+  function parseUrutanAnak(raw){
+    var s = String(raw || '').toLowerCase().trim();
+    if(!s) return '';
+    if(/tunggal|satu-satunya/.test(s)) return 'Tunggal';
+    if(/bungsu/.test(s)) return 'Bungsu';
+    var s0 = s.split(/\bdari\b/)[0];            /* abaikan "dari tiga bersaudara" */
+    var n = 0, m = s0.match(/(\d{1,2})/);
+    if(m){ n = parseInt(m[1], 10); }
+    if(!n){
+      Object.keys(URUTAN_DARI_KATA).forEach(function(k){ if(!n && new RegExp('\\b' + k + '\\b').test(s0)) n = URUTAN_DARI_KATA[k]; });
+    }
+    if(!n){
+      Object.keys(URUTAN_ANGKA_KATA).forEach(function(k){ if(!n && new RegExp('\\b' + k + '\\b').test(s0)) n = URUTAN_ANGKA_KATA[k]; });
+    }
+    if(!n) return '';
+    return n < URUTAN_KATA.length ? URUTAN_KATA[n] : ('Ke-' + n);
+  }
+  function formatAnakKe(raw, gender){
+    var urut = parseUrutanAnak(raw);
+    if(!urut){
+      urut = rapikanSpasi(raw).split(' ').filter(Boolean).map(titleCaseToken).join(' ');
+    }
+    if(!urut) return '';
+    return gender + ' ' + urut + ' Dari';
+  }
+
+  /* ---------- Bapak / Ibu ---------- */
+  function withHonorific(nama, prefix){
+    var n = String(nama || '').trim();
+    if(!n) return n;
+    var re = prefix === 'Bapak' ? /^(bapak|bpk\.?|pak)\s+/i : /^(ibu|bu)\s+/i;
+    return prefix + ' ' + n.replace(re, '');
+  }
+
+  /* Satu kalimat utuh: "Putra Pertama Dari Bapak Drs. H. Akbar Soleman, M.A. & Ibu Hj. Nur Fatimah, S.Pd" */
+  function buildSilsilah(anakRaw, gender, ayahRaw, ibuRaw){
+    var anak = formatAnakKe(anakRaw, gender);
+    if(!anak) return '';
+    var ayah = normalizeNama(String(ayahRaw || '').trim());
+    var ibu = normalizeNama(String(ibuRaw || '').trim());
+    var ortu = [];
+    if(ayah){ ortu.push(withHonorific(ayah, 'Bapak')); }
+    if(ibu){ ortu.push(withHonorific(ibu, 'Ibu')); }
+    return ortu.length ? (anak + ' ' + ortu.join(' & ')) : anak;
+  }
+
+  /* ---------- Pengikat otomatis ke kolom ---------- */
+  var SMART_CAP = {
+    nama:      { live: liveCapNama,        blur: normalizeNama,      autocap: 'words' },
+    panggilan: { live: liveUpperStarts,    blur: normalizePanggilan, autocap: 'words' },
+    judul:     { live: liveUpperStarts,    blur: rapikanSpasi,       autocap: 'words' },
+    alamat:    { live: liveUpperStarts,    blur: normalizeAlamat,    autocap: 'words' },
+    turut:     { live: liveUpperStarts,    blur: normalizeTurut,     autocap: 'words' },
+    bank:      { live: liveUpperStarts,    blur: normalizeBank,      autocap: 'words' },
+    kalimat:   { live: liveUpperSentences, blur: function(v){ return v.trim(); }, autocap: 'sentences' }
+  };
+  function bindSmartCap(el, kind){
     if(!el) return;
+    var cfg = SMART_CAP[kind];
+    if(!cfg) return;
+    el.setAttribute('autocapitalize', cfg.autocap);
+    el.addEventListener('input', function(e){
+      if(e.isComposing) return;
+      var v = el.value, nv = cfg.live(v);
+      if(nv !== v && nv.length === v.length){
+        var s = el.selectionStart, en = el.selectionEnd;
+        el.value = nv;
+        try{ el.setSelectionRange(s, en); }catch(err){}
+      }
+    });
     el.addEventListener('blur', function(){
-      var v = fn(el.value);
-      if(v !== undefined && v !== el.value){ el.value = v; }
+      var nv = cfg.blur(el.value);
+      if(nv !== undefined && nv !== el.value){ el.value = nv; }
     });
   }
-  ['orderName','wWanitaNama','wWanitaPanggilan','wWanitaAyah','wWanitaIbu',
-   'wPriaNama','wPriaPanggilan','wPriaAyah','wPriaIbu','testiName'
-  ].forEach(function(id){ bindAutoCap(document.getElementById(id), capitalizeNamaGelar); });
-  bindAutoCap(document.getElementById('wTurutMengundang'), capitalizeAlamat);
+  [['orderName','nama'], ['wWanitaNama','nama'], ['wWanitaAyah','nama'], ['wWanitaIbu','nama'],
+   ['wPriaNama','nama'], ['wPriaAyah','nama'], ['wPriaIbu','nama'], ['testiName','nama'],
+   ['wWanitaPanggilan','panggilan'], ['wPriaPanggilan','panggilan'],
+   ['wJudulAcara','judul'], ['wBacksound','judul'],
+   ['wTurutMengundang','turut'],
+   ['orderNotes','kalimat'], ['weddingNotes','kalimat'], ['testiMsg','kalimat']
+  ].forEach(function(p){ bindSmartCap(document.getElementById(p[0]), p[1]); });
+  ['wWanitaIG','wPriaIG'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el){ el.setAttribute('autocapitalize','none'); el.setAttribute('autocorrect','off'); }
+  });
+
+  /* Pratinjau langsung kalimat anak + orang tua di bawah kolom "Anak Ke" */
+  [['wWanitaAnakKe','Putri','previewWAnakKe','wWanitaAyah','wWanitaIbu'],
+   ['wPriaAnakKe','Putra','previewPAnakKe','wPriaAyah','wPriaIbu']].forEach(function(c){
+    var inp = document.getElementById(c[0]), pv = document.getElementById(c[2]);
+    var ayahEl = document.getElementById(c[3]), ibuEl = document.getElementById(c[4]);
+    if(!inp || !pv) return;
+    function refresh(){
+      var f = buildSilsilah(inp.value, c[1], ayahEl ? ayahEl.value : '', ibuEl ? ibuEl.value : '');
+      pv.textContent = f ? 'Akan ditulis: ' + f : '';
+    }
+    [inp, ayahEl, ibuEl].forEach(function(el){ if(el){ el.addEventListener('input', refresh); el.addEventListener('blur', refresh); } });
+  });
 
   /* ================= VALIDASI & KIRIM FORMULIR PEMESANAN ================= */
   var orderForm = document.getElementById('orderForm');
@@ -2152,7 +2406,7 @@
   var VENDOR_WA_NUMBER = '6285117071704';
 
   function collectOrderData(showErrors){
-    var name = document.getElementById('orderName').value.trim();
+    var name = normalizeNama(document.getElementById('orderName').value.trim());
     var phone = document.getElementById('orderPhone').value.trim();
     var namaTema = document.getElementById('orderNamaTema').value.trim();
     var jenis = orderTypeSelect.value;
@@ -2178,7 +2432,7 @@
 
   /* ================= KUMPULKAN DATA FORMULIR BIODATA PERNIKAHAN ================= */
   function collectWeddingData(showErrors){
-    var name = document.getElementById('orderName').value.trim();
+    var name = normalizeNama(document.getElementById('orderName').value.trim());
     var phone = document.getElementById('orderPhone').value.trim();
     var namaTema = document.getElementById('orderNamaTema').value.trim();
     var pkg = orderPackageSelect.value;
@@ -2186,32 +2440,41 @@
     var judulAcaraUtama = document.getElementById('wJudulAcara').value.trim();
 
     var wanita = {
-      nama: document.getElementById('wWanitaNama').value.trim(),
-      panggilan: document.getElementById('wWanitaPanggilan').value.trim(),
+      nama: normalizeNama(document.getElementById('wWanitaNama').value.trim()),
+      panggilan: normalizePanggilan(document.getElementById('wWanitaPanggilan').value),
       anakKe: document.getElementById('wWanitaAnakKe').value.trim(),
-      ayah: document.getElementById('wWanitaAyah').value.trim(),
-      ibu: document.getElementById('wWanitaIbu').value.trim(),
+      ayah: normalizeNama(document.getElementById('wWanitaAyah').value.trim()),
+      ibu: normalizeNama(document.getElementById('wWanitaIbu').value.trim()),
       ig: document.getElementById('wWanitaIG').value.trim()
     };
     var pria = {
-      nama: document.getElementById('wPriaNama').value.trim(),
-      panggilan: document.getElementById('wPriaPanggilan').value.trim(),
+      nama: normalizeNama(document.getElementById('wPriaNama').value.trim()),
+      panggilan: normalizePanggilan(document.getElementById('wPriaPanggilan').value),
       anakKe: document.getElementById('wPriaAnakKe').value.trim(),
-      ayah: document.getElementById('wPriaAyah').value.trim(),
-      ibu: document.getElementById('wPriaIbu').value.trim(),
+      ayah: normalizeNama(document.getElementById('wPriaAyah').value.trim()),
+      ibu: normalizeNama(document.getElementById('wPriaIbu').value.trim()),
       ig: document.getElementById('wPriaIG').value.trim()
     };
+    /* Teks final untuk WA & gambar: Bapak/Ibu pada orang tua, Putra/Putri + urutan + "Dari" */
+    wanita.anakKeTeks = formatAnakKe(wanita.anakKe, 'Putri');
+    wanita.ayahTeks = withHonorific(wanita.ayah, 'Bapak');
+    wanita.ibuTeks = withHonorific(wanita.ibu, 'Ibu');
+    wanita.silsilahTeks = buildSilsilah(wanita.anakKe, 'Putri', wanita.ayah, wanita.ibu);
+    pria.anakKeTeks = formatAnakKe(pria.anakKe, 'Putra');
+    pria.ayahTeks = withHonorific(pria.ayah, 'Bapak');
+    pria.ibuTeks = withHonorific(pria.ibu, 'Ibu');
+    pria.silsilahTeks = buildSilsilah(pria.anakKe, 'Putra', pria.ayah, pria.ibu);
 
     var acaraItems = [];
     acaraList.querySelectorAll('.acara-item').forEach(function(item){
       var id = item.getAttribute('data-id');
       var judulSel = item.querySelector('.acara-judul').value;
       var lainnyaEl = item.querySelector('.acara-lainnya');
-      var judulLainnya = lainnyaEl ? lainnyaEl.value.trim() : '';
+      var judulLainnya = lainnyaEl ? rapikanSpasi(lainnyaEl.value) : '';
       var judulFinal = judulSel === 'Lainnya' ? judulLainnya : judulSel;
       acaraItems.push({
         id: id, judulSel: judulSel, judul: judulFinal,
-        alamat: item.querySelector('.acara-alamat').value.trim(),
+        alamat: normalizeAlamat(item.querySelector('.acara-alamat').value.trim()),
         maps: item.querySelector('.acara-maps').value.trim(),
         tanggal: item.querySelector('.acara-tanggal').value,
         waktu: item.querySelector('.acara-waktu').value
@@ -2224,9 +2487,9 @@
     var rekeningItems = [];
     rekeningList.querySelectorAll('.rekening-item').forEach(function(item){
       rekeningItems.push({
-        bank: item.querySelector('.rek-bank').value.trim(),
+        bank: normalizeBank(item.querySelector('.rek-bank').value),
         nomor: item.querySelector('.rek-nomor').value.trim(),
-        nama: item.querySelector('.rek-nama').value.trim()
+        nama: normalizeNama(item.querySelector('.rek-nama').value.trim())
       });
     });
 
@@ -2239,7 +2502,7 @@
     });
 
     var turutItems = [];
-    var turutParagraf = document.getElementById('wTurutMengundang').value.trim();
+    var turutParagraf = normalizeTurut(document.getElementById('wTurutMengundang').value.trim());
     if(turutParagraf){ turutItems.push(turutParagraf); }
 
     var catatan = document.getElementById('weddingNotes').value.trim();
@@ -2300,17 +2563,13 @@
     lines.push('DATA PENGANTIN WANITA');
     lines.push('- Nama Lengkap: ' + d.wanita.nama);
     lines.push('- Nama Panggilan: ' + d.wanita.panggilan);
-    lines.push('- Anak Ke: ' + d.wanita.anakKe);
-    lines.push('- Nama Ayah: ' + d.wanita.ayah);
-    lines.push('- Nama Ibu: ' + d.wanita.ibu);
+    lines.push('- ' + d.wanita.silsilahTeks);
     if(d.wanita.ig){ lines.push('- Instagram: ' + d.wanita.ig); }
     lines.push('');
     lines.push('DATA PENGANTIN PRIA');
     lines.push('- Nama Lengkap: ' + d.pria.nama);
     lines.push('- Nama Panggilan: ' + d.pria.panggilan);
-    lines.push('- Anak Ke: ' + d.pria.anakKe);
-    lines.push('- Nama Ayah: ' + d.pria.ayah);
-    lines.push('- Nama Ibu: ' + d.pria.ibu);
+    lines.push('- ' + d.pria.silsilahTeks);
     if(d.pria.ig){ lines.push('- Instagram: ' + d.pria.ig); }
     lines.push('');
     lines.push('DETAIL ACARA');
@@ -2766,17 +3025,13 @@
       rows.push({ label:'DATA PENGANTIN WANITA', section:true });
       rows.push({ label:'NAMA LENGKAP', value:data.wanita.nama });
       rows.push({ label:'NAMA PANGGILAN', value:data.wanita.panggilan });
-      rows.push({ label:'ANAK KE', value:data.wanita.anakKe });
-      rows.push({ label:'NAMA AYAH', value:data.wanita.ayah });
-      rows.push({ label:'NAMA IBU', value:data.wanita.ibu });
+      rows.push({ label:'ANAK KE', value:data.wanita.silsilahTeks });
       if(data.wanita.ig){ rows.push({ label:'INSTAGRAM', value:data.wanita.ig }); }
 
       rows.push({ label:'DATA PENGANTIN PRIA', section:true });
       rows.push({ label:'NAMA LENGKAP', value:data.pria.nama });
       rows.push({ label:'NAMA PANGGILAN', value:data.pria.panggilan });
-      rows.push({ label:'ANAK KE', value:data.pria.anakKe });
-      rows.push({ label:'NAMA AYAH', value:data.pria.ayah });
-      rows.push({ label:'NAMA IBU', value:data.pria.ibu });
+      rows.push({ label:'ANAK KE', value:data.pria.silsilahTeks });
       if(data.pria.ig){ rows.push({ label:'INSTAGRAM', value:data.pria.ig }); }
 
       rows.push({ label:'DETAIL ACARA', section:true });
