@@ -1067,7 +1067,7 @@
       </div>
       <div class="field" id="fieldPhone">
         <label for="orderPhone">Nomor WhatsApp</label>
-        <input type="tel" id="orderPhone" placeholder="08xxxxxxxxxx">
+        <input type="tel" id="orderPhone" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx">
         <p class="err-text">Nomor WhatsApp wajib diisi.</p>
       </div>
       <div class="field" id="fieldPackage">
@@ -1089,7 +1089,7 @@
       </div>
       <div class="field" id="fieldNamaTema">
         <label for="orderNamaTema">Nomor Tema</label>
-        <input type="text" id="orderNamaTema" placeholder="Wajib diisi — nomor tema (angka), contoh: 07">
+        <input type="text" id="orderNamaTema" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="Wajib diisi — nomor tema (angka), contoh: 07">
         <p class="err-text">Nomor tema wajib diisi (angka saja) sesuai katalog di atas, agar admin tahu persis tema pilihan Anda.</p>
       </div>
       <div class="field" id="fieldType">
@@ -1650,12 +1650,13 @@
       '<div class="dyn-item-head"><span class="dyn-item-title">Rekening #<span class="rekening-num"></span></span>' +
       '<button type="button" class="dyn-remove" data-action="remove-rekening" data-id="'+id+'" aria-label="Hapus rekening">&times;</button></div>' +
       '<div class="field"><label>Nama Bank</label><input type="text" class="rek-bank" data-id="'+id+'" placeholder="cth. BCA"></div>' +
-      '<div class="field"><label>No. Rekening</label><input type="text" class="rek-nomor" data-id="'+id+'" placeholder="Nomor rekening"></div>' +
-      '<div class="field"><label>Atas Nama</label><input type="text" class="rek-nama" data-id="'+id+'" placeholder="Nama pemilik rekening"></div>';
+      '<div class="field"><label>No. Rekening</label><input type="text" class="rek-nomor" data-id="'+id+'" inputmode="numeric" pattern="[0-9]*" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Nomor rekening (angka saja)"></div>' +
+      '<div class="field"><label>Atas Nama</label><input type="text" class="rek-nama" data-id="'+id+'" autocapitalize="characters" autocomplete="off" placeholder="NAMA PEMILIK REKENING"></div>';
     rekeningList.appendChild(wrap);
     renumberGeneric(rekeningList, '.rekening-num');
     bindSmartCap(wrap.querySelector('.rek-bank'), 'bank');
-    bindSmartCap(wrap.querySelector('.rek-nama'), 'nama');
+    bindUpperCase(wrap.querySelector('.rek-nama'));
+    bindDigitsOnly(wrap.querySelector('.rek-nomor'));
   }
 
   function addLoveStoryItem(){
@@ -2475,6 +2476,47 @@
     return ortu.length ? (anak + ' ' + ortu.join(' & ')) : anak;
   }
 
+  /* ---------- Huruf besar semua (live) & angka saja ---------- */
+  function bindUpperCase(el){
+    if(!el) return;
+    el.setAttribute('autocapitalize','characters');
+    el.addEventListener('input', function(e){
+      if(e.isComposing) return;
+      var v = el.value, nv = v.toUpperCase();
+      if(nv !== v){
+        var s = el.selectionStart, en = el.selectionEnd, diff = nv.length - v.length;
+        el.value = nv;
+        try{ el.setSelectionRange(s + diff, en + diff); }catch(err){}
+      }
+    });
+    el.addEventListener('blur', function(){
+      var nv = rapikanSpasi(el.value).toUpperCase();
+      if(nv !== el.value){ el.value = nv; }
+    });
+  }
+  /* Hanya angka 0-9: spasi, huruf & simbol (termasuk hasil tempel/paste) langsung dibuang. */
+  function onlyDigits(v){ return String(v || '').replace(/\D/g, ''); }
+  function bindDigitsOnly(el){
+    if(!el) return;
+    el.setAttribute('inputmode','numeric');
+    el.setAttribute('pattern','[0-9]*');
+    el.setAttribute('autocomplete','off');
+    el.addEventListener('input', function(e){
+      if(e.isComposing) return;
+      var v = el.value, nv = onlyDigits(v);
+      if(nv !== v){
+        var pos = el.selectionStart;
+        var np = onlyDigits(v.slice(0, pos == null ? v.length : pos)).length;
+        el.value = nv;
+        try{ el.setSelectionRange(np, np); }catch(err){}
+      }
+    });
+    el.addEventListener('blur', function(){
+      var nv = onlyDigits(el.value);
+      if(nv !== el.value){ el.value = nv; }
+    });
+  }
+
   /* ---------- Pengikat otomatis ke kolom ---------- */
   var SMART_CAP = {
     nama:      { live: liveCapNama,        blur: normalizeNama,      autocap: 'words' },
@@ -2643,8 +2685,8 @@
     rekeningList.querySelectorAll('.rekening-item').forEach(function(item){
       rekeningItems.push({
         bank: normalizeBank(item.querySelector('.rek-bank').value),
-        nomor: item.querySelector('.rek-nomor').value.trim(),
-        nama: normalizeNama(item.querySelector('.rek-nama').value.trim())
+        nomor: onlyDigits(item.querySelector('.rek-nomor').value),
+        nama: rapikanSpasi(item.querySelector('.rek-nama').value).toUpperCase()
       });
     });
 
@@ -3733,8 +3775,8 @@
         addRekeningItem();
         var it = rekeningList.lastElementChild;
         it.querySelector('.rek-bank').value = r.bank || '';
-        it.querySelector('.rek-nomor').value = r.nomor || '';
-        it.querySelector('.rek-nama').value = r.nama || '';
+        it.querySelector('.rek-nomor').value = onlyDigits(r.nomor);
+        it.querySelector('.rek-nama').value = String(r.nama || '').toUpperCase();
       });
       (d.love || []).forEach(function(l){
         addLoveStoryItem();
